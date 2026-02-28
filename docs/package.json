@@ -1,0 +1,20 @@
+{
+  "name": "qualink-docs",
+  "version": "1.0.0",
+  "description": "Documentation site for qualink - data quality framework",
+  "private": true,
+  "scripts": {
+    "extract-api": "python3 scripts/extract_api.py",
+    "predev": "npm run extract-api",
+    "dev": "npx @11ty/eleventy --serve",
+    "prebuild": "npm run extract-api",
+    "build": "npx @11ty/eleventy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.2"
+  }
+}

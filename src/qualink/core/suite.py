@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from qualink.core.constraint import ConstraintStatus
@@ -46,6 +47,7 @@ class ValidationSuiteBuilder(LoggingMixin):
         self._ctx: SessionContext | None = None
         self._table_name: str = "data"
         self._checks: list[Check] = []
+        self._run_parallel: bool = False
         self.logger.debug("ValidationSuiteBuilder created: name='%s'", name)
 
     def description(self, desc: str) -> ValidationSuiteBuilder:
@@ -76,6 +78,12 @@ class ValidationSuiteBuilder(LoggingMixin):
         self.logger.debug("Added %d check(s) to suite '%s'", len(checks), self._name)
         return self
 
+    def run_parallel(self, enabled: bool = False) -> ValidationSuiteBuilder:
+        """Enable or disable concurrent check execution (default: enabled)."""
+        self._run_parallel = enabled
+        self.logger.debug("Parallel execution %s for suite '%s'", "enabled" if enabled else "disabled", self._name)
+        return self
+
     async def run(self) -> ValidationResult:
         """Execute all checks against the DataFusion context."""
 
@@ -96,8 +104,16 @@ class ValidationSuiteBuilder(LoggingMixin):
         overall_success = True
         worst_status = CheckStatus.SUCCESS
 
-        for check in self._checks:
-            cr: CheckResult = await check.run(self._ctx, self._table_name)
+        check_results: list[CheckResult] = []
+        if self._run_parallel:
+            check_results = await asyncio.gather(
+                *(check.run(self._ctx, self._table_name) for check in self._checks)
+            )
+        else:
+            for check in self._checks:
+                check_results.append(await check.run(self._ctx, self._table_name))
+
+        for check, cr in zip(self._checks, check_results):
             check_results_map[check.name] = cr.constraint_results
             metrics.total_constraints += len(cr.constraint_results)
 

@@ -134,6 +134,9 @@ def _build(cfg: dict[str, Any], ctx: SessionContext | None) -> ValidationSuiteBu
 
     builder = ValidationSuite.builder(suite_name).on_data(ctx, primary_table)
 
+    if "run_parallel" in suite_cfg:
+        builder.run_parallel(bool(suite_cfg["run_parallel"]))
+
     checks = cfg.get("checks", [])
     for check_cfg in checks:
         builder.add_check(_build_check(check_cfg))

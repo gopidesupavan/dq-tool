@@ -1,4 +1,3 @@
-
 .idea
 # Ruff cache
 .ruff-cache
@@ -174,7 +173,7 @@ packages.txt
 # Dask Executor tests generate this directory
 /tests/executors/dask-worker-space/
 
-# airflow-build-dockerfile and correconding ignore file
+# airflow-build-dockerfile and correponding ignore file
 airflow-build-dockerfile*
 
 # Temporary ignore uv.lock until we integrate it fully in our constraint preparation mechanism
@@ -185,3 +184,8 @@ airflow-build-dockerfile*
 
 # UV cache
 .uv-cache/
+
+# Documentation site build artifacts
+docs/node_modules/
+docs/_site/
+docs/.cache/

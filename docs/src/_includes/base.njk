@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} | qualink</title>
+  <meta name="description" content="{{ description or 'Blazing fast data quality framework for Python, built on Apache DataFusion' }}">
+  <link rel="stylesheet" href="{{ '/css/style.css' | url }}">
+</head>
+<body>
+  <header class="site-header">
+    <button class="mobile-menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="{{ '/' | url }}" class="logo">
+      <span class="logo-icon">⚡</span> qualink
+    </a>
+    <nav class="header-nav">
+      <a href="{{ '/guide/getting-started/' | url }}">Guide</a>
+      <a href="{{ '/api/core/' | url }}">API</a>
+      <a href="{{ '/examples/' | url }}">Examples</a>
+      <a href="https://github.com/gopidesupavan/qualink" class="github-link" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        GitHub
+      </a>
+    </nav>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Getting Started</div>
+          <a href="{{ '/guide/getting-started/' | url }}" {% if page.url == '/guide/getting-started/' %}class="active"{% endif %}>Introduction</a>
+          <a href="{{ '/guide/installation/' | url }}" {% if page.url == '/guide/installation/' %}class="active"{% endif %}>Installation</a>
+          <a href="{{ '/guide/quickstart/' | url }}" {% if page.url == '/guide/quickstart/' %}class="active"{% endif %}>Quick Start</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Core Concepts</div>
+          <a href="{{ '/guide/validation-suite/' | url }}" {% if page.url == '/guide/validation-suite/' %}class="active"{% endif %}>Validation Suite</a>
+          <a href="{{ '/guide/checks/' | url }}" {% if page.url == '/guide/checks/' %}class="active"{% endif %}>Checks</a>
+          <a href="{{ '/guide/constraints/' | url }}" {% if page.url == '/guide/constraints/' %}class="active"{% endif %}>Constraints</a>
+          <a href="{{ '/guide/assertions/' | url }}" {% if page.url == '/guide/assertions/' %}class="active"{% endif %}>Assertions</a>
+          <a href="{{ '/guide/levels/' | url }}" {% if page.url == '/guide/levels/' %}class="active"{% endif %}>Check Levels</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Configuration</div>
+          <a href="{{ '/guide/yaml-config/' | url }}" {% if page.url == '/guide/yaml-config/' %}class="active"{% endif %}>YAML Configuration</a>
+          <a href="{{ '/guide/formatters/' | url }}" {% if page.url == '/guide/formatters/' %}class="active"{% endif %}>Formatters</a>
+          <a href="{{ '/guide/logging/' | url }}" {% if page.url == '/guide/logging/' %}class="active"{% endif %}>Logging</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">API Reference</div>
+          <a href="{{ '/api/core/' | url }}" {% if page.url == '/api/core/' %}class="active"{% endif %}>Core</a>
+          <a href="{{ '/api/checks/' | url }}" {% if page.url == '/api/checks/' %}class="active"{% endif %}>Checks & Builder</a>
+          <a href="{{ '/api/constraints/' | url }}" {% if page.url == '/api/constraints/' %}class="active"{% endif %}>Constraints</a>
+          <a href="{{ '/api/comparison/' | url }}" {% if page.url == '/api/comparison/' %}class="active"{% endif %}>Comparison</a>
+          <a href="{{ '/api/formatters/' | url }}" {% if page.url == '/api/formatters/' %}class="active"{% endif %}>Formatters</a>
+          <a href="{{ '/api/config/' | url }}" {% if page.url == '/api/config/' %}class="active"{% endif %}>Config</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Examples</div>
+          <a href="{{ '/examples/' | url }}" {% if page.url == '/examples/' %}class="active"{% endif %}>All Examples</a>
+          <a href="{{ '/examples/basic-validation/' | url }}" {% if page.url == '/examples/basic-validation/' %}class="active"{% endif %}>Basic Validation</a>
+          <a href="{{ '/examples/yaml-driven/' | url }}" {% if page.url == '/examples/yaml-driven/' %}class="active"{% endif %}>YAML-Driven</a>
+          <a href="{{ '/examples/cross-table/' | url }}" {% if page.url == '/examples/cross-table/' %}class="active"{% endif %}>Cross-Table Checks</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      {{ content | safe }}
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>qualink — Apache 2.0 Licensed. Built with <a href="https://www.11ty.dev/" target="_blank">Eleventy</a>.</p>
+  </footer>
+</body>
+</html>
+

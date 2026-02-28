@@ -1,4 +1,4 @@
-# dq-tool
+# qualink
 
 Blazing fast data quality framework for Python, built on Apache DataFusion.
 
@@ -13,16 +13,16 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 
 ## Installation
 
-Install dq-tool using pip:
+Install qualink using pip:
 
 ```bash
-pip install dq-tool
+pip install qualink
 ```
 
 Or using uv:
 
 ```bash
-uv add dq-tool
+uv add qualink
 ```
 
 ## Quick Start
@@ -130,7 +130,7 @@ Results can be formatted using:
 To set up the development environment:
 
 ```bash
-git clone https://github.com/gopidesupavan/dq-tool.git
+git clone https://github.com/gopidesupavan/qualink.git
 cd dq-tool
 uv sync
 ```

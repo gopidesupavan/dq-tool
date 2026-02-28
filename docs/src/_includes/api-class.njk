@@ -1,0 +1,105 @@
+{#
+  Reusable macro for rendering a Python class from extracted API data.
+  Usage: {% from "api-class.njk" import renderModule, renderClass %}
+
+  The Python extractor pre-computes "signature" strings on methods and
+  "class_name_display" / "init_signature" on classes, so templates just
+  output them — no complex string manipulation needed.
+#}
+
+
+{# ── Render a full module (all classes + top-level functions) ── #}
+{% macro renderModule(mod) %}
+{% if mod.docstring %}
+<p>{{ mod.docstring }}</p>
+{% endif %}
+
+{% for cls in mod.classes %}
+{{ renderClass(cls) }}
+{% endfor %}
+
+{% for fn in mod.functions %}
+{{ renderFunction(fn) }}
+{% endfor %}
+{% endmacro %}
+
+
+{# ── Render a single class ── #}
+{% macro renderClass(cls) %}
+<div class="class-header">
+{% if cls.decorators.length > 0 %}<div class="class-decorators">{% for d in cls.decorators %}<span class="decorator-badge">@{{ d }}</span> {% endfor %}</div>{% endif %}
+<h3><span class="kw">class</span> {{ cls.class_name_only }}</h3>
+{% if cls.docstring %}<p>{{ cls.docstring }}</p>{% endif %}
+</div>
+
+{% if cls.is_enum and cls.enum_members.length > 0 %}
+
+| Member | Value |
+|--------|-------|
+{% for m in cls.enum_members %}| `{{ cls.name }}.{{ m.name }}` | `{{ m.value }}` |
+{% endfor %}
+
+{% endif %}
+
+{% if cls.is_dataclass and cls.fields.length > 0 %}
+
+| Field | Type | Default |
+|-------|------|---------|
+{% for f in cls.fields %}| `{{ f.name }}` | `{{ f.type }}` | {% if f.default %}`{{ f.default }}`{% else %}*required*{% endif %} |
+{% endfor %}
+
+{% endif %}
+
+{% if cls.properties.length > 0 %}
+**Properties:**
+{% for prop in cls.properties %}
+- `{{ prop.name }}{% if prop.returns %}: {{ prop.returns }}{% endif %}` {% if prop.docstring %}— {{ prop.docstring }}{% endif %}
+{% endfor %}
+
+{% endif %}
+
+{% if cls.init_signature %}
+<div class="method-signature">{{ cls.init_signature }}</div>
+
+{% for m in cls.methods %}
+{% if m.name == "__init__" and m.params.length > 0 %}
+
+| Param | Type | Default |
+|-------|------|---------|
+{% for p in m.params %}| `{{ p.name }}` | `{{ p.type if p.type else "—" }}` | {% if p.default %}`{{ p.default }}`{% else %}—{% endif %} |
+{% endfor %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% for m in cls.methods %}
+{% if m.name != "__init__" and m.name != "__str__" and m.name != "__repr__" and m.name != "__post_init__" %}
+
+<div class="method-signature">{{ m.signature }}</div>
+
+{% if m.docstring %}
+{{ m.docstring }}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+---
+
+{% endmacro %}
+
+
+{# ── Render a top-level function ── #}
+{% macro renderFunction(fn) %}
+
+<div class="method-signature">{{ fn.signature }}</div>
+
+{% if fn.docstring %}
+{{ fn.docstring }}
+{% endif %}
+
+---
+
+{% endmacro %}
+

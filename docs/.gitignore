@@ -1,0 +1,6 @@
+node_modules/
+_site/
+.cache/
+# Generated at build time by scripts/extract_api.py
+src/_data/api.json
+
