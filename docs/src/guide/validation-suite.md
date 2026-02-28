@@ -122,4 +122,3 @@ Validation PASSED: My Suite
   Issues:
     [warning] Data Quality / Completeness(name): ...
 ```
-

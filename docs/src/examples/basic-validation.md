@@ -132,4 +132,3 @@ Verification PASSED: User Data Quality
 ```
 
 If the `email` column had a null (like in row 7 for Grace), you'd see a failure for the uniqueness check with the actual metric value.
-

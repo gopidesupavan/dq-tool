@@ -208,4 +208,3 @@ data_sources:
 ```
 
 The first data source is the "primary" table that single-table constraints run against.
-

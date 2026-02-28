@@ -187,4 +187,3 @@ print(f"Only in users: {sm_result.only_in_a}")
 print(f"Only in orders: {sm_result.only_in_b}")
 print(f"Type mismatches: {sm_result.type_mismatches}")
 ```
-

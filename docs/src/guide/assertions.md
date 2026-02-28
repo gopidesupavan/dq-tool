@@ -119,4 +119,3 @@ assertion.evaluate(0.80)  # False
 | `equal_to(v)` | `==` | `metric == 1.0` |
 | `between(lo, hi)` | `lo ≤ x ≤ hi` | `18 <= metric <= 65` |
 | `custom(fn, label)` | callable | `fn(metric) == True` |
-

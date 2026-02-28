@@ -266,4 +266,3 @@ check.schema_match("table_a", "table_b", Assertion.equal_to(1.0))
 ```
 
 **Metric**: `1.0` if schemas match, `0.0` otherwise.
-

@@ -37,4 +37,3 @@ from qualink.core import (
 {% endfor %}
 
 {% endfor %}
-

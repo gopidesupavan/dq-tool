@@ -44,6 +44,7 @@ KEEP_DUNDERS = {"__init__", "__str__", "__repr__", "__post_init__"}
 
 # --- AST helpers -------------------------------------------------------------
 
+
 def _unparse(node: ast.expr | None) -> str:
     """Convert an AST node to its source-code string."""
     if node is None:
@@ -58,7 +59,7 @@ def _unparse(node: ast.expr | None) -> str:
         return ""
 
 
-def _get_docstring(node: ast.AST) -> str:
+def _get_docstring(node: ast.AsyncFunctionDef | ast.FunctionDef | ast.ClassDef | ast.Module) -> str:
     """Extract the docstring from a class/function/module node."""
     return ast.get_docstring(node) or ""
 
@@ -96,8 +97,9 @@ def _format_param(p: dict[str, str]) -> str:
     return "".join(parts)
 
 
-def _format_signature(name: str, params: list[dict], returns: str,
-                      is_async: bool = False, decorators: list[str] | None = None) -> str:
+def _format_signature(
+    name: str, params: list[dict], returns: str, is_async: bool = False, decorators: list[str] | None = None
+) -> str:
     """Build a full method/function signature string."""
     parts = []
     if decorators:
@@ -149,17 +151,21 @@ def _extract_function(node: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str,
 
     # *args
     if args.vararg:
-        params.append({
-            "name": f"*{args.vararg.arg}",
-            "type": _unparse(args.vararg.annotation),
-        })
+        params.append(
+            {
+                "name": f"*{args.vararg.arg}",
+                "type": _unparse(args.vararg.annotation),
+            }
+        )
 
     # **kwargs
     if args.kwarg:
-        params.append({
-            "name": f"**{args.kwarg.arg}",
-            "type": _unparse(args.kwarg.annotation),
-        })
+        params.append(
+            {
+                "name": f"**{args.kwarg.arg}",
+                "type": _unparse(args.kwarg.annotation),
+            }
+        )
 
     decorators = _get_decorators(node)
     returns = _unparse(node.returns)
@@ -184,17 +190,21 @@ def _extract_enum_members(node: ast.ClassDef) -> list[dict[str, str]]:
         if isinstance(stmt, ast.Assign):
             for target in stmt.targets:
                 if isinstance(target, ast.Name) and not target.id.startswith("_"):
-                    members.append({
-                        "name": target.id,
-                        "value": _unparse(stmt.value),
-                    })
+                    members.append(
+                        {
+                            "name": target.id,
+                            "value": _unparse(stmt.value),
+                        }
+                    )
         elif isinstance(stmt, ast.AnnAssign) and stmt.target and isinstance(stmt.target, ast.Name):
             name = stmt.target.id
             if not name.startswith("_"):
-                members.append({
-                    "name": name,
-                    "value": _unparse(stmt.value) if stmt.value else "",
-                })
+                members.append(
+                    {
+                        "name": name,
+                        "value": _unparse(stmt.value) if stmt.value else "",
+                    }
+                )
     return members
 
 
@@ -254,7 +264,7 @@ def _extract_class(node: ast.ClassDef) -> dict[str, Any]:
     methods = []
     properties = []
     for item in node.body:
-        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if isinstance(item, ast.FunctionDef | ast.AsyncFunctionDef):
             if _is_private(item.name):
                 if item.name not in KEEP_DUNDERS:
                     continue
@@ -299,7 +309,7 @@ def _extract_module_functions(tree: ast.Module) -> list[dict[str, Any]]:
     """Extract top-level functions from a module."""
     funcs = []
     for node in ast.iter_child_nodes(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
             if _is_private(node.name):
                 continue
             funcs.append(_extract_function(node))
@@ -307,6 +317,7 @@ def _extract_module_functions(tree: ast.Module) -> list[dict[str, Any]]:
 
 
 # --- Main extraction ---------------------------------------------------------
+
 
 def extract_file(filepath: Path, module_path: str) -> dict[str, Any]:
     """Parse a single Python file and extract all public API metadata."""
@@ -366,17 +377,18 @@ def main() -> None:
     total_classes = 0
     total_methods = 0
     total_functions = 0
-    for group_name, group_data in data.items():
+    for _group_name, group_data in data.items():
         for mod in group_data["modules"]:
             for cls in mod["classes"]:
                 total_classes += 1
                 total_methods += len(cls["methods"]) + len(cls["properties"])
             total_functions += len(mod["functions"])
 
-    print(f"✓ Extracted {total_classes} classes, {total_methods} methods/properties, "
-          f"{total_functions} functions → {OUT_FILE.relative_to(REPO_ROOT)}")
+    print(
+        f"✓ Extracted {total_classes} classes, {total_methods} methods/properties, "
+        f"{total_functions} functions → {OUT_FILE.relative_to(REPO_ROOT)}"
+    )
 
 
 if __name__ == "__main__":
     main()
-

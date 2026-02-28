@@ -36,4 +36,3 @@ All constraints extend `Constraint` (ABC) and implement:
 {% endfor %}
 
 {% endfor %}
-

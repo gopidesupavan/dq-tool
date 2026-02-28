@@ -31,4 +31,3 @@ from qualink.checks import Check, CheckBuilder, CheckResult, Level
 {% endfor %}
 
 {% endfor %}
-

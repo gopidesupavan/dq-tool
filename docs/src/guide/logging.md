@@ -103,4 +103,3 @@ configure_logging(
 <div class="callout-title">📌 Note</div>
 <p><code>configure_logging()</code> is safe to call multiple times — handlers are not duplicated.</p>
 </div>
-

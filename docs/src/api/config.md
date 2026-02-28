@@ -62,4 +62,3 @@ The parser supports these string formats for assertions in YAML:
 | `lte` | `<=` |
 | `eq` | `==` |
 | `between` | `between(lo, hi)` |
-

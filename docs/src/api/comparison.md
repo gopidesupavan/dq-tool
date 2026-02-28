@@ -35,4 +35,3 @@ from qualink.comparison.schema_match import SchemaMatch, SchemaMatchResult
 {% endfor %}
 
 {% endfor %}
-

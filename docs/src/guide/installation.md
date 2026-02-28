@@ -75,4 +75,3 @@ print("qualink is ready! ✓")
 <div class="callout-title">💡 Tip</div>
 <p>qualink works with any data source supported by DataFusion: CSV, Parquet, JSON, and in-memory Arrow tables.</p>
 </div>
-

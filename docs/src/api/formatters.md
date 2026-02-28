@@ -55,4 +55,3 @@ class CsvFormatter(ResultFormatter):
                 lines.append(f"{check_name},{cr.constraint_name},{cr.status},{metric}")
         return "\n".join(lines)
 ```
-

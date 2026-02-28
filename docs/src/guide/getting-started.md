@@ -62,4 +62,3 @@ order: 1
 - [Installation](../installation/) — Install qualink and dependencies
 - [Quick Start](../quickstart/) — Run your first validation in 5 minutes
 - [Constraints Reference](../constraints/) — Explore all 25+ built-in constraints
-

@@ -81,7 +81,9 @@ class ValidationSuiteBuilder(LoggingMixin):
     def run_parallel(self, enabled: bool = False) -> ValidationSuiteBuilder:
         """Enable or disable concurrent check execution (default: enabled)."""
         self._run_parallel = enabled
-        self.logger.debug("Parallel execution %s for suite '%s'", "enabled" if enabled else "disabled", self._name)
+        self.logger.debug(
+            "Parallel execution %s for suite '%s'", "enabled" if enabled else "disabled", self._name
+        )
         return self
 
     async def run(self) -> ValidationResult:
@@ -113,7 +115,7 @@ class ValidationSuiteBuilder(LoggingMixin):
             for check in self._checks:
                 check_results.append(await check.run(self._ctx, self._table_name))
 
-        for check, cr in zip(self._checks, check_results):
+        for check, cr in zip(self._checks, check_results, strict=False):
             check_results_map[check.name] = cr.constraint_results
             metrics.total_constraints += len(cr.constraint_results)
 

@@ -92,4 +92,3 @@ level.as_str()           # "error"
 str(level)               # "error"
 level.is_at_least(Level.WARNING)  # True (ERROR >= WARNING)
 ```
-
