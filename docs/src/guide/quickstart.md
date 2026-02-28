@@ -68,7 +68,6 @@ async def main() -> None:
         .run()
     )
 
-    # Print the results
     print(HumanFormatter().format(result))
 
 
