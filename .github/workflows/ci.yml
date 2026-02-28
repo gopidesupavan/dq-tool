@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: 'false'
+    - uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+    - name: Install prek
+      shell: bash
+      run: |
+        uv tool install prek
+    - name: Install dependencies
+      run: uv sync --all-extras --all-groups
+    - name: "Static checks"
+      run: prek --all-files --show-diff-on-failure --color always
+      env:
+        VERBOSE: "true"
+        COLUMNS: "202"
+        SKIP_GROUP_OUTPUT: "true"
+        RUFF_FORMAT: "github"
+    - name: "Show prek log on failure"
+      run: cat ~/.cache/prek/prek.log || true
+      if: failure()
+    - name: Run tests
+      run: uv run pytest
