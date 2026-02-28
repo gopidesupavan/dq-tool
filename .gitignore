@@ -4,7 +4,8 @@
 .ruff-cache
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*.__pycache__/*
+tests/checks/__pycache__/*
 *.py[cod]
 *$py.class
 .pytest_cache/

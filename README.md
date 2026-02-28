@@ -99,3 +99,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Apache DataFusion](https://datafusion.apache.org/) for the query engine
+- [AWS Deequ](https://github.com/awslabs/deequ/) for the inspiration
+- [Term Guard](https://github.com/withterm/term-guard)

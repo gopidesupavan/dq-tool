@@ -9,22 +9,31 @@ from datafusion import SessionContext
 from dq_tool.checks import Check, Level
 from dq_tool.constraints import Assertion
 from dq_tool.core import ValidationSuite
-from dq_tool.formatters import MarkdownFormatter
 
 
 async def main() -> None:
     ctx = SessionContext()
     ctx.register_csv("users", "examples/users.csv")
 
-    result = await (
+    await (
         ValidationSuite()
         .on_data(ctx, "users")
         .with_name("User Data Quality")
-        .add_check(Check.builder("Critical Checks").with_level(Level.ERROR).is_complete("user_id").build())
+        .add_check(
+            Check.builder("Critical Checks")
+            .with_level(Level.ERROR)
+            .is_complete("user_id")
+            .is_unique("email")
+            .has_size(Assertion.greater_than(0))
+            .build()
+        )
         .add_check(
             Check.builder("Data Quality")
             .with_level(Level.WARNING)
             .has_completeness("name", Assertion.greater_than_or_equal(0.95))
+            .has_min("age", Assertion.greater_than_or_equal(0))
+            .has_max("age", Assertion.less_than_or_equal(120))
+            .has_pattern("email", r"@")
             .build()
         )
         .run()
@@ -34,7 +43,7 @@ async def main() -> None:
     # print()
     # print(JsonFormatter().format(result))
     # print()
-    print(MarkdownFormatter().format(result))
+    # print(MarkdownFormatter().format(result))
 
 
 if __name__ == "__main__":

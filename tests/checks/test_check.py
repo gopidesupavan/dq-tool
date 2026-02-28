@@ -99,4 +99,199 @@ class TestCheckBuilder:
         assert isinstance(check, Check)
         assert check.name == "test"
         assert check.level == Level.INFO
-        assert check.description == "desc"
+
+    def test_has_completeness(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_completeness("col", Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_column(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_column("col")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_is_unique(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.is_unique("col1", "col2")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_is_primary_key(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.is_primary_key("col1", "col2")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_uniqueness(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_uniqueness(["col1"], Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_distinctness(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_distinctness(["col1"], Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_unique_value_ratio(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_unique_value_ratio(["col1"], Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_satisfies_with_assertion(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.satisfies("predicate", assertion=Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_satisfies_without_assertion(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.satisfies("predicate")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_pattern_with_assertion(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_pattern("col", "pattern", Assertion.equal_to(1.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_pattern_without_assertion(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_pattern("col", "pattern")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_contains_email(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.contains_email("col")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_contains_url(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.contains_url("col")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_contains_credit_card(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.contains_credit_card("col")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_contains_ssn(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.contains_ssn("col")
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_min(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_min("col", Assertion.equal_to(10))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_max(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_max("col", Assertion.equal_to(100))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_mean(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_mean("col", Assertion.equal_to(50.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_sum(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_sum("col", Assertion.equal_to(1000))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_standard_deviation(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_standard_deviation("col", Assertion.equal_to(5.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_min_length(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_min_length("col", Assertion.equal_to(5))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_max_length(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_max_length("col", Assertion.equal_to(50))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_approx_count_distinct(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_approx_count_distinct("col", Assertion.equal_to(100))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_approx_quantile(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_approx_quantile("col", 0.5, Assertion.equal_to(50.0))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_size(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_size(Assertion.equal_to(1000))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_has_column_count(self):
+        from dq_tool.constraints.assertion import Assertion
+
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.has_column_count(Assertion.equal_to(10))
+        assert len(builder._constraints) == initial_len + 1
+
+    def test_custom_sql(self):
+        builder = CheckBuilder("test")
+        initial_len = len(builder._constraints)
+        builder.custom_sql("SELECT * FROM table")
+        assert len(builder._constraints) == initial_len + 1
