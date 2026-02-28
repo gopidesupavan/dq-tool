@@ -1,0 +1,11 @@
+id,name,email,age,score,status,url,credit_card,ssn,tier
+1,Al,al@test.com,20,42.0,active,https://example.com/1,4111111111111111,123-45-6789,gold
+2,Bob,bob@test.com,25,52.0,active,https://example.com/2,4222222222222222,234-56-7890,gold
+3,Charlie,charlie@test.com,30,62.0,active,https://example.com/3,4333333333333333,345-67-8901,gold
+4,Dana,dana@test.com,35,72.0,active,https://example.com/4,4444444444444444,456-78-9012,gold
+5,Eve,eve@test.com,40,82.0,inactive,https://example.com/5,4555555555555555,567-89-0123,silver
+6,Frank,frank@test.com,45,90.0,inactive,https://example.com/6,4666666666666666,678-90-1234,silver
+7,Grace,grace@test.com,50,98.0,inactive,https://example.com/7,4777777777777777,789-01-2345,silver
+8,Hank,hank@test.com,55,108.0,pending,https://example.com/8,4888888888888888,890-12-3456,bronze
+9,Ivy,ivy@test.com,60,118.0,pending,https://example.com/9,4999999999999999,901-23-4567,bronze
+10,Jack,jack@test.com,65,130.0,deleted,https://example.com/10,4000000000000000,012-34-5678,basic

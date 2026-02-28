@@ -1,0 +1,154 @@
+suite:
+  name: "DQ Tool – Every Built-In Rule"
+
+data_source:
+  type: csv
+  path: "examples/showcase_data.csv"
+  table_name: showcase
+
+checks:
+
+  - name: "Schema & Structure"
+    level: error
+    description: "Row count, column count, and column existence"
+    rules:
+      # has_size – assertion on row count
+      - has_size:
+          assertion:
+            operator: equal_to
+            value: 10
+      # has_column_count – assertion on number of columns
+      - has_column_count:
+          eq: 10
+      # has_column – column existence (one per column)
+      - has_column: id
+      - has_column: name
+      - has_column: email
+      - has_column: age
+      - has_column: score
+      - has_column: status
+      - has_column: url
+      - has_column: credit_card
+      - has_column: ssn
+      - has_column: tier
+
+  - name: "Completeness"
+    level: error
+    description: "No nulls in critical columns; threshold for others"
+    rules:
+      # is_complete – 100% non-null (column-only shorthand)
+      - is_complete: id
+      - is_complete: name
+      - is_complete: email
+      - is_complete: age
+      # has_completeness – column + bound (fraction non-null)
+      - has_completeness:
+          column: score
+          gte: 0.9
+
+  - name: "Uniqueness & Keys"
+    level: error
+    description: "Primary key, uniqueness, distinctness, unique-value ratio"
+    rules:
+      # is_unique – all values distinct (varargs shorthand)
+      - is_unique: id
+      # is_primary_key – alias for unique + not-null
+      - is_primary_key: id
+      # has_uniqueness – fraction of unique combos (columns list + bound)
+      - has_uniqueness:
+          columns: [id]
+          gte: 1.0
+      # has_distinctness – COUNT(DISTINCT) / COUNT(*)
+      - has_distinctness:
+          columns: [status]
+          gte: 0.3
+      # has_unique_value_ratio – values appearing exactly once / distinct count
+      - has_unique_value_ratio:
+          columns: [status]
+          gte: 0.2
+
+  - name: "Numeric Statistics"
+    level: error
+    description: "Min, max, mean, sum, stddev with all bound types"
+    rules:
+      # has_min – gte bound (minimum of column >= value)
+      - has_min:
+          column: age
+          gte: 0
+      # has_max – lte bound (maximum of column <= value)
+      - has_max:
+          column: age
+          lte: 120
+      # has_mean – between bound (average within range)
+      - has_mean:
+          column: age
+          between: [30, 50]
+      # has_sum – eq bound (exact sum)
+      - has_sum:
+          column: age
+          eq: 425
+      # has_min with gt bound (strict greater-than)
+      - has_min:
+          column: score
+          gt: 0
+      # has_max with lt bound (strict less-than)
+      - has_max:
+          column: score
+          lt: 200
+
+  - name: "Approximate Statistics"
+    level: warning
+    description: "Approx count distinct and approx quantile"
+    rules:
+      # has_approx_count_distinct – approximate distinct count
+      - has_approx_count_distinct:
+          column: id
+          gte: 9
+      # has_approx_quantile – approximate percentile
+      - has_approx_quantile:
+          column: age
+          quantile: 0.5
+          between: [35, 50]
+
+  - name: "String Lengths"
+    level: warning
+    description: "Min and max string length of name column"
+    rules:
+      # has_min_length – MIN(LENGTH(column)) satisfies bound
+      - has_min_length:
+          column: name
+          gte: 2
+      # has_max_length – MAX(LENGTH(column)) satisfies bound
+      - has_max_length:
+          column: name
+          lte: 10
+
+  - name: "Formats & Patterns"
+    level: error
+    description: "Regex patterns and built-in format validators"
+    rules:
+      # has_pattern – fraction matching regex satisfies bound
+      - has_pattern:
+          column: email
+          pattern: "@"
+      # contains_email – all non-null values match email regex
+      - contains_email: email
+      # contains_url – all non-null values match URL regex
+      - contains_url: url
+      # contains_credit_card – all non-null values match credit card regex
+      - contains_credit_card: credit_card
+      # contains_ssn – all non-null values match SSN regex
+      - contains_ssn: ssn
+
+  - name: "Business Rules"
+    level: error
+    description: "SQL predicate compliance and raw custom SQL"
+    rules:
+      # satisfies – fraction of rows where predicate is true (with assertion)
+      - satisfies:
+          predicate: "age >= 18"
+          name: "all adults"
+          gte: 1.0
+      # custom_sql – boolean expression that must hold for all rows
+      - custom_sql:
+          expression: "age >= 0 AND age <= 120"

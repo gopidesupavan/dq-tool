@@ -18,10 +18,7 @@ from dq_tool.core.constraint import (
 
 
 class PatternMatchConstraint(Constraint):
-    """Validates that the fraction of *column* values matching *pattern* satisfies *assertion*.
-
-    Mirrors Deequ's ``hasPattern`` / ``PatternMatch`` analyzer.
-    """
+    """Validates that the fraction of *column* values matching *pattern* satisfies *assertion*."""
 
     def __init__(
         self,
