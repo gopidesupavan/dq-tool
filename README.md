@@ -126,7 +126,7 @@ Results can be formatted using:
 To set up the development environment:
 
 ```bash
-git clone https://github.com/yourusername/dq-tool.git
+git clone https://github.com/gopidesupavan/dq-tool.git
 cd dq-tool
 uv sync
 ```
