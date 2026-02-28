@@ -6,6 +6,7 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 
 - **High Performance**: Leverages Apache DataFusion for fast data processing and validation.
 - **Flexible Constraints**: Supports various data quality constraints including completeness, uniqueness, and custom assertions.
+- **YAML Configuration**: Define validation suites declaratively using YAML files.
 - **Multiple Output Formats**: Results can be formatted as human-readable text, JSON, or Markdown.
 - **Async Support**: Built with asyncio for non-blocking operations.
 - **Easy Integration**: Simple API for defining and running validation suites.
@@ -55,6 +56,50 @@ async def main() -> None:
     )
 
     print(MarkdownFormatter().format(result))
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## YAML Configuration
+
+You can also define validation suites using YAML files for a declarative approach:
+
+```yaml
+suite:
+  name: "User Data Quality"
+
+data_source:
+  type: csv
+  path: "examples/users.csv"
+  table_name: users
+
+checks:
+  - name: "Critical Checks"
+    level: error
+    rules:
+      - is_complete: user_id
+      - is_unique: email
+      - has_size:
+          gt: 0
+  - name: "Data Quality"
+    level: warning
+    rules:
+      - has_completeness:
+          column: name
+          gte: 0.95
+```
+
+Run the YAML configuration:
+
+```python
+import asyncio
+from dq_tool.config import run_yaml
+from dq_tool.formatters import HumanFormatter
+
+async def main() -> None:
+    result = await run_yaml("path/to/your/config.yaml")
+    print(HumanFormatter().format(result))
 
 if __name__ == "__main__":
     asyncio.run(main())
