@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.uniqueness import UniquenessConstraint
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.uniqueness import UniquenessConstraint
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestUniquenessConstraint:
@@ -16,11 +17,11 @@ class TestUniquenessConstraint:
             UniquenessConstraint([], threshold=0.8)
 
     def test_init_invalid_threshold_low(self) -> None:
-        with pytest.raises(ValueError, match="threshold must be in \\[0, 1\\], got -0.1"):
+        with pytest.raises(ValueError, match=r"threshold must be in \[0, 1\], got -0.1"):
             UniquenessConstraint(["col"], threshold=-0.1)
 
     def test_init_invalid_threshold_high(self) -> None:
-        with pytest.raises(ValueError, match="threshold must be in \\[0, 1\\], got 1.5"):
+        with pytest.raises(ValueError, match=r"threshold must be in \[0, 1\], got 1.5"):
             UniquenessConstraint(["col"], threshold=1.5)
 
     def test_name_single_column(self) -> None:
@@ -46,7 +47,7 @@ class TestUniquenessConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_success(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -55,7 +56,7 @@ class TestUniquenessConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = UniquenessConstraint(["col"], threshold=0.9)
@@ -68,7 +69,7 @@ class TestUniquenessConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_failure(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -77,7 +78,7 @@ class TestUniquenessConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = UniquenessConstraint(["col1", "col2"], threshold=0.8)

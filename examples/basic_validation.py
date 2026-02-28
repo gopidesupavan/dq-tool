@@ -6,9 +6,9 @@ All queries run through Apache DataFusion.
 import asyncio
 
 from datafusion import SessionContext
-from dq_tool.checks import Check, Level
-from dq_tool.constraints import Assertion
-from dq_tool.core import ValidationSuite
+from qualink.checks import Check, Level
+from qualink.constraints import Assertion
+from qualink.core import ValidationSuite
 
 
 async def main() -> None:

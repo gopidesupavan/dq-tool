@@ -1,15 +1,16 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from dq_tool.checks.check import Check, CheckBuilder, CheckResult
-from dq_tool.core.constraint import ConstraintResult, ConstraintStatus
-from dq_tool.core.level import Level
-from dq_tool.core.result import CheckStatus
+from datafusion import SessionContext
+from qualink.checks.check import Check, CheckBuilder, CheckResult
+from qualink.core.constraint import Constraint, ConstraintResult, ConstraintStatus
+from qualink.core.level import Level
+from qualink.core.result import CheckStatus
 
 
 class TestCheckResult:
     def test_creation(self):
-        mock_check = MagicMock()
+        mock_check = MagicMock(spec=Check)
         results = [ConstraintResult(status=ConstraintStatus.SUCCESS)]
         cr = CheckResult(check=mock_check, status=CheckStatus.SUCCESS, constraint_results=results)
         assert cr.check == mock_check
@@ -19,7 +20,7 @@ class TestCheckResult:
 
 class TestCheck:
     def test_creation(self):
-        constraints = [MagicMock()]
+        constraints = [MagicMock(spec=Constraint)]
         check = Check(_name="test", _level=Level.ERROR, _description="desc", _constraints=constraints)
         assert check.name == "test"
         assert check.level == Level.ERROR
@@ -33,7 +34,7 @@ class TestCheck:
 
     @pytest.mark.asyncio()
     async def test_run_success(self):
-        mock_constraint = MagicMock()
+        mock_constraint = MagicMock(spec=Constraint)
         mock_constraint.evaluate = AsyncMock(
             return_value=ConstraintResult(status=ConstraintStatus.SUCCESS, constraint_name="con1")
         )
@@ -41,7 +42,7 @@ class TestCheck:
 
         check = Check(_name="test", _level=Level.INFO, _description="", _constraints=[mock_constraint])
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         result = await check.run(mock_ctx, "table")
 
         assert result.status == CheckStatus.SUCCESS
@@ -49,7 +50,7 @@ class TestCheck:
 
     @pytest.mark.asyncio()
     async def test_run_failure(self):
-        mock_constraint = MagicMock()
+        mock_constraint = MagicMock(spec=Constraint)
         mock_constraint.evaluate = AsyncMock(
             return_value=ConstraintResult(status=ConstraintStatus.FAILURE, constraint_name="con1")
         )
@@ -57,7 +58,7 @@ class TestCheck:
 
         check = Check(_name="test", _level=Level.ERROR, _description="", _constraints=[mock_constraint])
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         result = await check.run(mock_ctx, "table")
 
         assert result.status == CheckStatus.ERROR
@@ -80,7 +81,7 @@ class TestCheckBuilder:
         assert builder._description == "desc"
 
     def test_add_constraint(self):
-        mock_con = MagicMock()
+        mock_con = MagicMock(spec=Constraint)
         builder = CheckBuilder("test").add_constraint(mock_con)
         assert builder._constraints == [mock_con]
 
@@ -93,7 +94,7 @@ class TestCheckBuilder:
 
     def test_build(self):
         builder = CheckBuilder("test").with_level(Level.INFO).with_description("desc")
-        mock_con = MagicMock()
+        mock_con = MagicMock(spec=Constraint)
         builder.add_constraint(mock_con)
         check = builder.build()
         assert isinstance(check, Check)
@@ -101,7 +102,7 @@ class TestCheckBuilder:
         assert check.level == Level.INFO
 
     def test_has_completeness(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -127,7 +128,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_uniqueness(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -135,7 +136,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_distinctness(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -143,7 +144,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_unique_value_ratio(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -151,7 +152,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_satisfies_with_assertion(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -165,7 +166,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_pattern_with_assertion(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -203,7 +204,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_min(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -211,7 +212,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_max(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -219,7 +220,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_mean(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -227,7 +228,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_sum(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -235,7 +236,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_standard_deviation(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -243,7 +244,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_min_length(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -251,7 +252,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_max_length(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -259,7 +260,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_approx_count_distinct(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -267,7 +268,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_approx_quantile(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -275,7 +276,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_size(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
@@ -283,7 +284,7 @@ class TestCheckBuilder:
         assert len(builder._constraints) == initial_len + 1
 
     def test_has_column_count(self):
-        from dq_tool.constraints.assertion import Assertion
+        from qualink.constraints.assertion import Assertion
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)

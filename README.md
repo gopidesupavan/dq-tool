@@ -32,10 +32,11 @@ Here's a basic example of using dq-tool to validate a CSV file:
 ```python
 import asyncio
 from datafusion import SessionContext
-from dq_tool.checks import Check, Level
-from dq_tool.constraints import Assertion
-from dq_tool.core import ValidationSuite
-from dq_tool.formatters import MarkdownFormatter
+from qualink.checks import Check, Level
+from qualink.constraints import Assertion
+from qualink.core import ValidationSuite
+from qualink.formatters import MarkdownFormatter
+
 
 async def main() -> None:
     ctx = SessionContext()
@@ -56,6 +57,7 @@ async def main() -> None:
     )
 
     print(MarkdownFormatter().format(result))
+
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -94,12 +96,14 @@ Run the YAML configuration:
 
 ```python
 import asyncio
-from dq_tool.config import run_yaml
-from dq_tool.formatters import HumanFormatter
+from qualink.config import run_yaml
+from qualink.formatters import HumanFormatter
+
 
 async def main() -> None:
     result = await run_yaml("path/to/your/config.yaml")
     print(HumanFormatter().format(result))
+
 
 if __name__ == "__main__":
     asyncio.run(main())

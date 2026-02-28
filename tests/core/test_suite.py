@@ -1,11 +1,12 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from dq_tool.checks.check import CheckResult
-from dq_tool.core.constraint import ConstraintResult, ConstraintStatus
-from dq_tool.core.level import Level
-from dq_tool.core.result import CheckStatus
-from dq_tool.core.suite import ValidationSuite, ValidationSuiteBuilder
+from datafusion import SessionContext
+from qualink.checks.check import Check, CheckResult
+from qualink.core.constraint import ConstraintResult, ConstraintStatus
+from qualink.core.level import Level
+from qualink.core.result import CheckStatus
+from qualink.core.suite import ValidationSuite, ValidationSuiteBuilder
 
 
 class TestValidationSuite:
@@ -20,7 +21,7 @@ class TestValidationSuite:
 
     def test_on_data(self):
         suite = ValidationSuite("test")
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         builder = suite.on_data(mock_ctx, "table")
         assert isinstance(builder, ValidationSuiteBuilder)
         assert builder._ctx == mock_ctx
@@ -49,18 +50,18 @@ class TestValidationSuiteBuilder:
         assert builder._table_name == "new_table"
 
     def test_on_data(self):
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         builder = ValidationSuiteBuilder("test").on_data(mock_ctx, "table")
         assert builder._ctx == mock_ctx
         assert builder._table_name == "table"
 
     def test_add_check(self):
-        mock_check = MagicMock()
+        mock_check = MagicMock(spec=Check)
         builder = ValidationSuiteBuilder("test").add_check(mock_check)
         assert builder._checks == [mock_check]
 
     def test_add_checks(self):
-        mock_checks = [MagicMock(), MagicMock()]
+        mock_checks = [MagicMock(spec=Check), MagicMock(spec=Check)]
         builder = ValidationSuiteBuilder("test").add_checks(mock_checks)
         assert builder._checks == mock_checks
 
@@ -72,8 +73,7 @@ class TestValidationSuiteBuilder:
 
     @pytest.mark.asyncio()
     async def test_run_success(self):
-        # Mock check
-        mock_check = MagicMock()
+        mock_check = MagicMock(spec=Check)
         mock_check.name = "test_check"
         mock_check.level = Level.INFO
         mock_result = CheckResult(
@@ -83,7 +83,7 @@ class TestValidationSuiteBuilder:
         )
         mock_check.run = AsyncMock(return_value=mock_result)
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         builder = ValidationSuiteBuilder("test").on_data(mock_ctx, "table").add_check(mock_check)
 
         result = await builder.run()
@@ -96,8 +96,7 @@ class TestValidationSuiteBuilder:
 
     @pytest.mark.asyncio()
     async def test_run_with_failure(self):
-        # Mock check with failure
-        mock_check = MagicMock()
+        mock_check = MagicMock(spec=Check)
         mock_check.name = "test_check"
         mock_check.level = Level.ERROR
         mock_result = CheckResult(
@@ -109,7 +108,7 @@ class TestValidationSuiteBuilder:
         )
         mock_check.run = AsyncMock(return_value=mock_result)
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         builder = ValidationSuiteBuilder("test").on_data(mock_ctx, "table").add_check(mock_check)
 
         result = await builder.run()

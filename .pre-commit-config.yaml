@@ -27,6 +27,14 @@ repos:
         args: [ --fix ]
         require_serial: true
         additional_dependencies: [ 'ruff==0.4.4' ]
+      - id: ruff-format
+        name: Run 'ruff format' for Python formatting
+        description: "Run 'ruff format' to auto-format Python files (line length, quotes, etc.)"
+        entry: ruff format --force-exclude
+        language: python
+        types_or: [python, pyi]
+        require_serial: true
+        additional_dependencies: [ 'ruff==0.4.4' ]
       - id: ty
         name: ty check
         entry: uv run ty check .

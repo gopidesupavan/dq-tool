@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.assertion import Assertion
-from dq_tool.constraints.column_count import ColumnCountConstraint
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.assertion import Assertion
+from qualink.constraints.column_count import ColumnCountConstraint
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestColumnCountConstraint:
@@ -29,10 +30,10 @@ class TestColumnCountConstraint:
     async def test_evaluate_success(self) -> None:
         mock_schema = MagicMock()
         mock_schema.__len__ = MagicMock(return_value=5)
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_df.schema.return_value = mock_schema
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.equal_to(5.0)
@@ -48,10 +49,10 @@ class TestColumnCountConstraint:
     async def test_evaluate_failure(self) -> None:
         mock_schema = MagicMock()
         mock_schema.__len__ = MagicMock(return_value=3)
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_df.schema.return_value = mock_schema
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.greater_than(4.0)

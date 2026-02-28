@@ -1,15 +1,15 @@
 import json
 
-from dq_tool.core.level import Level
-from dq_tool.core.result import (
+from qualink.core.level import Level
+from qualink.core.result import (
     CheckStatus,
     ValidationIssue,
     ValidationMetrics,
     ValidationReport,
     ValidationResult,
 )
-from dq_tool.formatters.base import FormatterConfig
-from dq_tool.formatters.json_formatter import JsonFormatter
+from qualink.formatters.base import FormatterConfig
+from qualink.formatters.json_formatter import JsonFormatter
 
 
 class TestJsonFormatter:

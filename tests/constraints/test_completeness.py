@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.assertion import Assertion
-from dq_tool.constraints.completeness import CompletenessConstraint
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.assertion import Assertion
+from qualink.constraints.completeness import CompletenessConstraint
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestCompletenessConstraint:
@@ -30,7 +31,7 @@ class TestCompletenessConstraint:
     @pytest.mark.asyncio()
     async def test_evaluate_full_completeness(self) -> None:
         # Mock datafusion
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -39,7 +40,7 @@ class TestCompletenessConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.equal_to(1.0)
@@ -53,7 +54,7 @@ class TestCompletenessConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_partial_completeness_failure(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -62,7 +63,7 @@ class TestCompletenessConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.greater_than_or_equal(0.8)
@@ -77,7 +78,7 @@ class TestCompletenessConstraint:
     @pytest.mark.asyncio()
     async def test_evaluate_zero_rows(self) -> None:
         # For zero rows, GREATEST(COUNT(*), 1) = 1, but completeness = 1.0 - 0/1 = 1.0
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -86,7 +87,7 @@ class TestCompletenessConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.equal_to(1.0)

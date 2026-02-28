@@ -1,9 +1,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.assertion import Assertion
-from dq_tool.constraints.max_length import MaxLengthConstraint
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.assertion import Assertion
+from qualink.constraints.max_length import MaxLengthConstraint
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestMaxLengthConstraint:
@@ -29,7 +30,7 @@ class TestMaxLengthConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_success(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -38,7 +39,7 @@ class TestMaxLengthConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.less_than_or_equal(100.0)
@@ -52,7 +53,7 @@ class TestMaxLengthConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_failure(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -61,7 +62,7 @@ class TestMaxLengthConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.less_than_or_equal(100.0)
@@ -76,7 +77,7 @@ class TestMaxLengthConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_all_nulls(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -85,7 +86,7 @@ class TestMaxLengthConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         assertion = Assertion.less_than_or_equal(100.0)

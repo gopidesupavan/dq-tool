@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.column_exists import ColumnExistsConstraint
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.column_exists import ColumnExistsConstraint
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestColumnExistsConstraint:
@@ -31,10 +32,10 @@ class TestColumnExistsConstraint:
         mock_schema = MagicMock()
         mock_schema.__len__ = MagicMock(return_value=2)
         mock_schema.field.side_effect = lambda i: [mock_field1, mock_field2][i]
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_df.schema.return_value = mock_schema
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = ColumnExistsConstraint("col")
@@ -54,10 +55,10 @@ class TestColumnExistsConstraint:
         mock_schema = MagicMock()
         mock_schema.__len__ = MagicMock(return_value=2)
         mock_schema.field.side_effect = lambda i: [mock_field1, mock_field2][i]
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_df.schema.return_value = mock_schema
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = ColumnExistsConstraint("missing_col", hint="Add the column")
@@ -73,10 +74,10 @@ class TestColumnExistsConstraint:
     async def test_evaluate_empty_schema(self) -> None:
         mock_schema = MagicMock()
         mock_schema.__len__ = MagicMock(return_value=0)
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_df.schema.return_value = mock_schema
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = ColumnExistsConstraint("col")

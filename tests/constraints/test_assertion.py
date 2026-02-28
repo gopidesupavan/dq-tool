@@ -1,5 +1,5 @@
 import pytest
-from dq_tool.constraints.assertion import Assertion, _Op
+from qualink.constraints.assertion import Assertion, _Op
 
 
 class TestAssertion:

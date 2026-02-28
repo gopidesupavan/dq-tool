@@ -1,8 +1,9 @@
 from unittest.mock import MagicMock
 
 import pytest
-from dq_tool.constraints.format import FormatConstraint, FormatType
-from dq_tool.core.constraint import ConstraintMetadata, ConstraintStatus
+from datafusion import DataFrame, SessionContext
+from qualink.constraints.format import FormatConstraint, FormatType
+from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
 
 class TestFormatConstraint:
@@ -36,7 +37,7 @@ class TestFormatConstraint:
     @pytest.mark.parametrize("format_type", [FormatType.EMAIL, FormatType.URL, FormatType.PHONE])
     @pytest.mark.asyncio()
     async def test_evaluate_success(self, format_type) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -45,7 +46,7 @@ class TestFormatConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = FormatConstraint("col", format_type, threshold=0.9)
@@ -57,7 +58,7 @@ class TestFormatConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_custom_regex_success(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -66,7 +67,7 @@ class TestFormatConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = FormatConstraint("col", FormatType.REGEX, pattern=r"\d{3}", threshold=0.9)
@@ -77,7 +78,7 @@ class TestFormatConstraint:
 
     @pytest.mark.asyncio()
     async def test_evaluate_failure_threshold(self) -> None:
-        mock_df = MagicMock()
+        mock_df = MagicMock(spec=DataFrame)
         mock_row = MagicMock()
         mock_column = MagicMock()
         mock_value = MagicMock()
@@ -86,7 +87,7 @@ class TestFormatConstraint:
         mock_row.column.return_value = mock_column
         mock_df.collect.return_value = [mock_row]
 
-        mock_ctx = MagicMock()
+        mock_ctx = MagicMock(spec=SessionContext)
         mock_ctx.sql.return_value = mock_df
 
         c = FormatConstraint("col", FormatType.EMAIL, threshold=0.8)

@@ -1,4 +1,4 @@
-from dq_tool.core.level import Level
+from qualink.core.level import Level
 
 
 class TestLevel:

@@ -1,14 +1,14 @@
-from dq_tool.core.constraint import ConstraintResult, ConstraintStatus
-from dq_tool.core.level import Level
-from dq_tool.core.result import (
+from qualink.core.constraint import ConstraintResult, ConstraintStatus
+from qualink.core.level import Level
+from qualink.core.result import (
     CheckStatus,
     ValidationIssue,
     ValidationMetrics,
     ValidationReport,
     ValidationResult,
 )
-from dq_tool.formatters.base import FormatterConfig
-from dq_tool.formatters.human_formatter import HumanFormatter
+from qualink.formatters.base import FormatterConfig
+from qualink.formatters.human_formatter import HumanFormatter
 
 
 class TestHumanFormatter:

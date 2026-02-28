@@ -2,8 +2,8 @@
 
 import asyncio
 
-from dq_tool.config import run_yaml
-from dq_tool.formatters import HumanFormatter, JsonFormatter
+from qualink.config import run_yaml
+from qualink.formatters import HumanFormatter, JsonFormatter
 
 
 async def main() -> None:

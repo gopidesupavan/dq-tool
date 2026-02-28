@@ -1,15 +1,18 @@
 suite:
-  name: "DQ Tool – Every Built-In Rule"
+  name: "DQ Tool – Every Built-In Rule (Including Comparisons)"
 
-data_source:
-  type: csv
-  path: "examples/showcase_data.csv"
-  table_name: showcase
+data_sources:
+  - type: csv
+    path: "examples/showcase_data.csv"
+    table_name: showcase
+  - type: csv
+    path: "examples/users.csv"
+    table_name: users
 
 checks:
 
   - name: "Schema & Structure"
-    level: error
+    level: warning
     description: "Row count, column count, and column existence"
     rules:
       # has_size – assertion on row count
@@ -33,7 +36,7 @@ checks:
       - has_column: tier
 
   - name: "Completeness"
-    level: error
+    level: warning
     description: "No nulls in critical columns; threshold for others"
     rules:
       # is_complete – 100% non-null (column-only shorthand)
@@ -47,7 +50,7 @@ checks:
           gte: 0.9
 
   - name: "Uniqueness & Keys"
-    level: error
+    level: warning
     description: "Primary key, uniqueness, distinctness, unique-value ratio"
     rules:
       # is_unique – all values distinct (varargs shorthand)
@@ -68,7 +71,7 @@ checks:
           gte: 0.2
 
   - name: "Numeric Statistics"
-    level: error
+    level: warning
     description: "Min, max, mean, sum, stddev with all bound types"
     rules:
       # has_min – gte bound (minimum of column >= value)
@@ -124,7 +127,7 @@ checks:
           lte: 10
 
   - name: "Formats & Patterns"
-    level: error
+    level: warning
     description: "Regex patterns and built-in format validators"
     rules:
       # has_pattern – fraction matching regex satisfies bound
@@ -141,7 +144,7 @@ checks:
       - contains_ssn: ssn
 
   - name: "Business Rules"
-    level: error
+    level: warning
     description: "SQL predicate compliance and raw custom SQL"
     rules:
       # satisfies – fraction of rows where predicate is true (with assertion)
@@ -152,3 +155,35 @@ checks:
       # custom_sql – boolean expression that must hold for all rows
       - custom_sql:
           expression: "age >= 0 AND age <= 120"
+
+  - name: "Information Theory"
+    level: warning
+    description: "Entropy, mutual information, and correlation"
+    rules:
+      # has_correlation – Pearson correlation between two numeric columns
+      - has_correlation:
+          column_a: age
+          column_b: score
+          lte: 0.9
+
+  - name: "Cross-Table Comparisons"
+    level: error
+    description: "Referential integrity, row count match, and schema match between tables"
+    rules:
+      # referential_integrity – check that all values in child column exist in parent column
+      - referential_integrity:
+          child_table: users
+          child_column: user_id
+          parent_table: showcase
+          parent_column: id
+          gte: 1.0
+      # row_count_match – compare row counts between two tables
+      - row_count_match:
+          table_a: showcase
+          table_b: users
+          eq: 1.0
+      # schema_match – compare schemas between two tables
+      - schema_match:
+          table_a: showcase
+          table_b: users
+          eq: 1.0

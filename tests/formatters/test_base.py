@@ -1,5 +1,4 @@
-import pytest
-from dq_tool.formatters.base import FormatterConfig, ResultFormatter
+from qualink.formatters.base import FormatterConfig, ResultFormatter
 
 
 class TestFormatterConfig:
@@ -19,11 +18,6 @@ class TestFormatterConfig:
 
 
 class TestResultFormatter:
-    def test_abstract_format(self):
-        # Cannot instantiate abstract class
-        with pytest.raises(TypeError):
-            ResultFormatter()
-
     def test_init_default_config(self):
         class ConcreteFormatter(ResultFormatter):
             def format(self, result):

@@ -1,5 +1,5 @@
-from dq_tool.core.level import Level
-from dq_tool.core.result import (
+from qualink.core.level import Level
+from qualink.core.result import (
     CheckStatus,
     ValidationIssue,
     ValidationMetrics,

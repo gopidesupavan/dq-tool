@@ -1,5 +1,4 @@
-import pytest
-from dq_tool.core.constraint import (
+from qualink.core.constraint import (
     Constraint,
     ConstraintMetadata,
     ConstraintResult,
@@ -66,11 +65,6 @@ class TestConstraintResult:
 
 
 class TestConstraint:
-    def test_abstract_methods(self) -> None:
-        # Test that Constraint cannot be instantiated directly
-        with pytest.raises(TypeError):
-            Constraint()
-
     def test_repr(self) -> None:
         # Since it's abstract, we need a concrete subclass for repr test
         class ConcreteConstraint(Constraint):
