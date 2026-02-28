@@ -71,6 +71,7 @@ async def main() -> None:
     print(HumanFormatter().format(result))
 
 
+
 if __name__ == "__main__":
     asyncio.run(main())
 ```
