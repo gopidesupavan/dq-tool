@@ -27,7 +27,7 @@ uv add qualink
 
 ## Quick Start
 
-Here's a basic example of using dq-tool to validate a CSV file:
+Here's a basic example of using qualink to validate a CSV file:
 
 ```python
 import asyncio
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
 ## Constraints
 
-dq-tool supports the following constraint types:
+qualink supports the following constraint types:
 
 - **Completeness**: Ensures a column has no null values or meets a minimum completeness ratio.
 - **Uniqueness**: Checks for duplicate values in a column.
@@ -131,7 +131,7 @@ To set up the development environment:
 
 ```bash
 git clone https://github.com/gopidesupavan/qualink.git
-cd dq-tool
+cd qualink
 uv sync
 ```
 
