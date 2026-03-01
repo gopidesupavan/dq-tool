@@ -13,6 +13,7 @@ order: 1
 
 - **Performance**: DataFusion's vectorized Arrow-native query engine processes millions of rows in seconds.
 - **Declarative**: Define checks in Python or YAML — no raw SQL needed.
+- **CLI-first**: Run validations from the terminal with `qualinkctl --help`.
 - **Comprehensive**: 25+ built-in constraints covering completeness, uniqueness, statistics, formats, cross-table integrity, and more.
 - **Extensible**: Create custom constraints by subclassing `Constraint`.
 - **Async-first**: Built on `asyncio` for non-blocking pipeline integration.
@@ -56,9 +57,11 @@ order: 1
 | **Assertion** | A reusable predicate for numeric comparisons |
 | **Level** | Severity: `ERROR`, `WARNING`, or `INFO` |
 | **Formatter** | Converts results to Human, JSON, or Markdown output |
+| **qualinkctl** | CLI tool to run YAML validations from the terminal |
 
 ## Next Steps
 
 - [Installation](../installation/) — Install qualink and dependencies
 - [Quick Start](../quickstart/) — Run your first validation in 5 minutes
+- [CLI – qualinkctl](../cli/) — Run validations from the command line
 - [Constraints Reference](../constraints/) — Explore all 25+ built-in constraints

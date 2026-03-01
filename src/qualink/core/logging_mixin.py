@@ -24,10 +24,7 @@ def configure_logging(
 class LoggingMixin:
     """Mixin that provides a per-class ``self.logger`` cached property.
 
-    The logger name follows the pattern ``<module>.<qualname>`` so that
-    users can fine-tune levels per package, e.g.::
-
-        logging.getLogger("qualink.constraints").setLevel(logging.DEBUG)
+    logging.getLogger("qualink.constraints").setLevel(logging.DEBUG)
     """
 
     @functools.cached_property

@@ -1,20 +1,3 @@
-"""YAML parser: loads a config file and converts assertion shorthands.
-
-Supports two assertion formats:
-
-1. **Shorthand string** — ``"> 5"``, ``">= 0.95"``, ``"== 3"``, ``"between 1 10"``
-2. **Structured dict** —
-
-   .. code-block:: yaml
-
-      assertion:
-        operator: greater_than
-        value: 5
-
-Both are normalised into :class:`qualink.constraints.assertion.Assertion`
-instances by :func:`parse_assertion`.
-"""
-
 from __future__ import annotations
 
 import re

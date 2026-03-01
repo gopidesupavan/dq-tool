@@ -1,12 +1,3 @@
-"""Constraint registry: declarative table mapping YAML type strings to constraints.
-
-Instead of a separate factory function per constraint type, every constraint
-is declared as a single :class:`ConstraintDef` entry.  A generic builder
-reads the ``kind`` field and extracts parameters accordingly.
-
-Adding a new constraint type = adding one line to ``_DEFS``.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field

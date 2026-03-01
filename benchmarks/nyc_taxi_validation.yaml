@@ -16,6 +16,7 @@
 suite:
   name: "NYC Taxi Trips – qualink Benchmark Suite"
 
+run_parallel: True
 data_sources:
   - type: parquet
     path: "benchmarks/data"

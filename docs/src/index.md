@@ -12,7 +12,7 @@ title: Home
     <a href="{{ '/api/core/' | url }}" class="btn btn-secondary">API Reference</a>
   </div>
   <div class="install-block">
-    <span style="color:#8b949e">$</span> pip install qualink
+    <span style="color:#8b949e">$</span> uv add qualink
   </div>
 </section>
 
@@ -41,6 +41,11 @@ title: Home
     <div class="icon">📊</div>
     <h3>Multiple Formatters</h3>
     <p>Output results as human-readable text, JSON for pipelines, or Markdown for reports.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">🖥️</div>
+    <h3>CLI – qualinkctl</h3>
+    <p>Run validations from the terminal with a single command. Perfect for CI/CD pipelines and automation.</p>
   </div>
   <div class="feature-card">
     <div class="icon">🏗️</div>

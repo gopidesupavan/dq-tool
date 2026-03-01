@@ -13,18 +13,18 @@ order: 2
 - **Apache DataFusion** 43.0.0+
 - **PyArrow** 15.0.0+
 
+## Install via uv (recommended)
+
+[uv](https://github.com/astral-sh/uv) is a fast Python package and project manager:
+
+```bash
+uv add qualink
+```
+
 ## Install via pip
 
 ```bash
 pip install qualink
-```
-
-## Install via uv
-
-[uv](https://github.com/astral-sh/uv) is a fast Python package manager:
-
-```bash
-uv add qualink
 ```
 
 ## Install from source
@@ -41,6 +41,7 @@ qualink has minimal dependencies:
 
 | Package | Version | Purpose |
 |---------|---------|---------|
+| `click` | ≥ 8.0 | CLI framework for `qualinkctl` |
 | `datafusion` | ≥ 43.0.0 | SQL query engine (Apache DataFusion) |
 | `pyarrow` | ≥ 15.0.0 | Arrow columnar format support |
 | `pyyaml` | ≥ 6.0 | YAML configuration parsing |
@@ -61,6 +62,12 @@ This installs additional packages:
 | `pytest-asyncio` | Async test support |
 
 ## Verify Installation
+
+After installing, verify that both the library and CLI are available:
+
+```bash
+qualinkctl --help
+```
 
 ```python
 import qualink

@@ -109,6 +109,7 @@ Issues:
 
 ## Next Steps
 
+- [CLI – qualinkctl](../cli/) — Run validations from the command line without writing Python
 - [Validation Suite](../validation-suite/) — Learn how suites work in detail
 - [Constraints](../constraints/) — Explore all 25+ built-in constraints
 - [YAML Configuration](../yaml-config/) — Define checks without writing code

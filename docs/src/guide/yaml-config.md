@@ -320,6 +320,18 @@ checks:
 
 ## Running YAML Configs
 
+### Using qualinkctl (recommended)
+
+The simplest way to run a YAML config is with the `qualinkctl` CLI:
+
+```bash
+qualinkctl checks.yaml
+qualinkctl checks.yaml -f json
+qualinkctl checks.yaml -f markdown -o report.md
+```
+
+See the [CLI guide](../cli/) for all options and CI/CD integration examples.
+
 ### One-liner
 
 ```python

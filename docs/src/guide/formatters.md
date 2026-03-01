@@ -9,6 +9,11 @@ order: 10
 
 Formatters convert a `ValidationResult` into a human-readable or machine-readable output string. qualink ships with three built-in formatters.
 
+<div class="callout callout-tip">
+<div class="callout-title">💡 Tip</div>
+<p>You can also choose the output format directly from the CLI using <code>qualinkctl checks.yaml -f json</code>. See the <a href="../cli/">CLI guide</a> for details.</p>
+</div>
+
 ## HumanFormatter
 
 Produces colorized terminal output with pass/fail icons.

@@ -7,6 +7,7 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 - **High Performance**: Leverages Apache DataFusion for fast data processing and validation.
 - **Flexible Constraints**: Supports various data quality constraints including completeness, uniqueness, and custom assertions.
 - **YAML Configuration**: Define validation suites declaratively using YAML files.
+- **CLI – `qualinkctl`**: Run YAML-driven validations from the terminal — no Python script required.
 - **Cloud Object Stores**: Read data directly from Amazon S3 (and S3-compatible services).
 - **Multiple Output Formats**: Results can be formatted as human-readable text, JSON, or Markdown.
 - **Async Support**: Built with asyncio for non-blocking operations.
@@ -14,16 +15,16 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 
 ## Installation
 
-Install qualink using pip:
-
-```bash
-pip install qualink
-```
-
-Or using uv:
+Install qualink using uv:
 
 ```bash
 uv add qualink
+```
+
+Or using pip:
+
+```bash
+pip install qualink
 ```
 
 ## Quick Start
@@ -110,6 +111,32 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## CLI – `qualinkctl`
+
+The simplest way to run a YAML validation is with `qualinkctl`:
+
+```bash
+# Human-readable output (default)
+uv run qualinkctl checks.yaml
+
+# JSON output
+uv run qualinkctl checks.yaml -f json
+
+# Markdown report saved to file
+uv run qualinkctl checks.yaml -f markdown -o report.md
+
+# Show all constraints (including passed) with debug logging
+uv run qualinkctl checks.yaml --show-passed -v
+```
+
+`qualinkctl` exits with code `0` on success and `1` on failure, making it easy to use in CI/CD pipelines:
+
+```bash
+uv run qualinkctl checks.yaml -f json -o results.json || echo "Validation failed!"
+```
+
+Run `uv run qualinkctl --help` for a full list of options.
+
 ### S3 Object Store Sources
 
 qualink can read data directly from Amazon S3 using DataFusion's built-in `AmazonS3`:
@@ -151,6 +178,69 @@ Results can be formatted using:
 - `HumanFormatter`: Human-readable text output.
 - `JsonFormatter`: JSON format for programmatic processing.
 - `MarkdownFormatter`: Markdown tables for documentation.
+
+## Benchmarks
+
+qualink ships with a real-world benchmark suite that validates **~42 million NYC Yellow Taxi trip records** (654 MB of Parquet data) through 12 check groups and 92 constraints — in **under 1.5 seconds**.
+
+```
+========================================================================
+  qualink Benchmark — NYC Taxi Trips
+========================================================================
+  Parquet files : 3
+  Total size    : 654.3 MB
+  Data dir      : benchmarks/data
+  YAML config   : benchmarks/nyc_taxi_validation.yaml
+
+    • data-200901.parquet  (211.9 MB)
+    • data-201206.parquet  (231.1 MB)
+    • data-201501.parquet  (211.3 MB)
+========================================================================
+
+⏱  Running benchmark with 'human' formatter …
+
+Verification PASSED: NYC Taxi Trips – qualink Benchmark Suite
+
+Checks          12
+Constraints     92
+Passed          91
+Failed          1
+Skipped         0
+Pass rate       98.9%
+Execution time  1440 ms
+
+Status    Check       Message
+--------  ----------  ---------------------------------------------
+[FAIL]    Uniqueness  Uniqueness of (id) is 0.0000, expected >= 1.0
+
+========================================================================
+  Status         : ✅ PASSED
+  Total records  : 41.94M
+  Wall-clock     : 1.455s
+  Checks         : 12
+  Constraints    : 92
+  Passed         : 91
+  Failed         : 1
+  Pass rate      : 98.9%
+  Engine time    : 0.02m
+========================================================================
+```
+
+### Run it yourself
+
+```bash
+# 1. Download data (parquet files from public S3)
+./benchmarks/download_data.sh 3
+
+# 2. Run the benchmark
+uv run python benchmarks/run_benchmark.py
+
+# Other output formats
+uv run python benchmarks/run_benchmark.py --format markdown
+uv run python benchmarks/run_benchmark.py --format json
+```
+
+See [`benchmarks/README.md`](benchmarks/README.md) for full dataset details and configuration.
 
 ## Development
 
