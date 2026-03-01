@@ -86,3 +86,56 @@ async def main():
 
 asyncio.run(main())</code></pre>
 </section>
+
+<section style="max-width:800px;margin:0 auto 60px;padding:0 24px;">
+  <h2 style="text-align:center;color:var(--color-text);margin-bottom:8px;">⚡ Benchmark Highlights</h2>
+  <p style="text-align:center;color:var(--color-text-secondary);margin-bottom:28px;">Real-world validation on NYC Yellow Taxi trip data.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:24px;">
+    <div style="text-align:center;padding:20px 12px;background:var(--color-bg-secondary,#161b22);border-radius:10px;">
+      <div style="font-size:2rem;font-weight:700;color:var(--color-accent,#58a6ff);">42M</div>
+      <div style="font-size:0.85rem;color:var(--color-text-secondary);">Records</div>
+    </div>
+    <div style="text-align:center;padding:20px 12px;background:var(--color-bg-secondary,#161b22);border-radius:10px;">
+      <div style="font-size:2rem;font-weight:700;color:var(--color-accent,#58a6ff);">654 MB</div>
+      <div style="font-size:0.85rem;color:var(--color-text-secondary);">Parquet Data</div>
+    </div>
+    <div style="text-align:center;padding:20px 12px;background:var(--color-bg-secondary,#161b22);border-radius:10px;">
+      <div style="font-size:2rem;font-weight:700;color:var(--color-accent,#58a6ff);">92</div>
+      <div style="font-size:0.85rem;color:var(--color-text-secondary);">Constraints</div>
+    </div>
+    <div style="text-align:center;padding:20px 12px;background:var(--color-bg-secondary,#161b22);border-radius:10px;">
+      <div style="font-size:2rem;font-weight:700;color:var(--color-accent,#58a6ff);">1.44s</div>
+      <div style="font-size:0.85rem;color:var(--color-text-secondary);">Engine Time</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--color-text-secondary);font-size:0.9rem;">
+    12 check groups · 98.9% pass rate · powered by Apache DataFusion<br>
+    <a href="{{ '/guide/benchmarks/' | url }}" style="color:var(--color-accent,#58a6ff);">See full benchmark details →</a>
+  </p>
+</section>
+
+<section style="max-width:800px;margin:0 auto 60px;padding:0 24px;">
+  <h2 style="text-align:center;color:var(--color-text);margin-bottom:8px;">🗺️ Upcoming Features</h2>
+  <p style="text-align:center;color:var(--color-text-secondary);margin-bottom:28px;">Here's what's on the roadmap.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+    <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
+      <h4 style="margin:0 0 6px;color:var(--color-text);">📈 Analyzers</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Automatically profile your data — distributions, cardinality, null rates — before writing a single rule.</p>
+    </div>
+    <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
+      <h4 style="margin:0 0 6px;color:var(--color-text);">🗄️ Metrics Repository</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Persist validation metrics over time to track data quality trends, regressions, and SLA compliance.</p>
+    </div>
+    <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
+      <h4 style="margin:0 0 6px;color:var(--color-text);">🔍 Anomaly Detection</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Detect unexpected shifts in data distributions and metric values using statistical methods.</p>
+    </div>
+    <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
+      <h4 style="margin:0 0 6px;color:var(--color-text);">💡 Intelligent Rule Suggestions</h4>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Get automatic constraint recommendations based on data profiling — jump-start your validation suite.</p>
+    </div>
+  </div>
+</section>
