@@ -8,7 +8,7 @@ version = "0.0.1"
 description = "Blazing fast data quality framework for Python, built on Apache DataFusion"
 readme = "README.md"
 license = "Apache-2.0"
-license-files = ["LICENSE", "NOTICE"]
+license-files = ["LICENSE"]
 authors = [
     { name = "Pavan Kumar Gopidesu"},
 ]
@@ -17,7 +17,7 @@ maintainers = [
 ]
 keywords = ["data", "quality", "dq"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
