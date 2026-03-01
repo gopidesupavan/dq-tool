@@ -7,7 +7,7 @@ order: 1
 
 # Getting Started
 
-**qualink** is a blazing-fast data quality framework for Python, built on [Apache DataFusion](https://datafusion.apache.org/). It lets you define, run, and report data-quality checks against CSV, Parquet, JSON, or any data source supported by DataFusion — all powered by SQL under the hood.
+**qualink** — short for **qual**ity **link** — is a blazing-fast data quality framework for Python, built on [Apache DataFusion](https://datafusion.apache.org/). The name reflects the project's mission: *linking your data to quality* by bridging raw datasets with rigorous validation rules. It lets you define, run, and report data-quality checks against CSV, Parquet, JSON, or any data source supported by DataFusion — all powered by SQL under the hood.
 
 ## Why qualink?
 

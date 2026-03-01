@@ -5,6 +5,7 @@ title: Home
 
 <section class="hero">
   <h1>qualink</h1>
+  <p class="tagline-name" style="color:var(--color-text-secondary);font-size:1.1rem;margin-bottom:8px;letter-spacing:0.5px;"><strong>qual</strong>ity + l<strong>ink</strong> — linking your data to quality.</p>
   <p class="tagline">Blazing fast data quality framework for Python, built on Apache DataFusion.</p>
   <div class="hero-buttons">
     <a href="{{ '/guide/getting-started/' | url }}" class="btn btn-primary">Get Started →</a>
