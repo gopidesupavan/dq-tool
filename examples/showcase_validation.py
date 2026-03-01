@@ -1,17 +1,13 @@
-"""End-to-end showcase: runs every built-in rule type from YAML."""
-
 import asyncio
 
 from qualink.config import run_yaml
-from qualink.formatters import HumanFormatter, JsonFormatter
+from qualink.formatters import MarkdownFormatter
 
 
 async def main() -> None:
     result = await run_yaml("examples/showcase_all_rules.yaml")
 
-    print(HumanFormatter().format(result))
-    print()
-    print(JsonFormatter().format(result))
+    print(MarkdownFormatter().format(result))
 
 
 if __name__ == "__main__":

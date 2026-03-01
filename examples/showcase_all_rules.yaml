@@ -1,5 +1,5 @@
 suite:
-  name: "DQ Tool – Every Built-In Rule (Including Comparisons)"
+  name: "Qualink Tool (Quality Linking) – Every Built-In Rule"
 
 data_sources:
   - type: csv
@@ -22,7 +22,7 @@ checks:
             value: 10
       # has_column_count – assertion on number of columns
       - has_column_count:
-          eq: 10
+          eq: 12
       # has_column – column existence (one per column)
       - has_column: id
       - has_column: name
@@ -34,6 +34,8 @@ checks:
       - has_column: credit_card
       - has_column: ssn
       - has_column: tier
+      - has_column: phone
+      - has_column: ip_address
 
   - name: "Completeness"
     level: warning
@@ -90,6 +92,10 @@ checks:
       - has_sum:
           column: age
           eq: 425
+      # has_stddev – standard deviation within a range
+      - has_stddev:
+          column: age
+          between: [10, 20]
       # has_min with gt bound (strict greater-than)
       - has_min:
           column: score
@@ -128,7 +134,7 @@ checks:
 
   - name: "Formats & Patterns"
     level: warning
-    description: "Regex patterns and built-in format validators"
+    description: "Regex patterns, built-in format validators, and generic has_format"
     rules:
       # has_pattern – fraction matching regex satisfies bound
       - has_pattern:
@@ -142,6 +148,35 @@ checks:
       - contains_credit_card: credit_card
       # contains_ssn – all non-null values match SSN regex
       - contains_ssn: ssn
+      # has_format – generic format constraint with format_type (email)
+      - has_format:
+          column: email
+          format_type: email
+      # has_format – generic format constraint with format_type (url)
+      - has_format:
+          column: url
+          format_type: url
+      # has_format – generic format constraint with format_type (credit_card)
+      - has_format:
+          column: credit_card
+          format_type: credit_card
+      # has_format – generic format constraint with format_type (ssn)
+      - has_format:
+          column: ssn
+          format_type: ssn
+      # has_format – generic format constraint with format_type (phone)
+      - has_format:
+          column: phone
+          format_type: phone
+      # has_format – generic format constraint with format_type (ipv4)
+      - has_format:
+          column: ip_address
+          format_type: ipv4
+      # has_format – custom regex via format_type: regex
+      - has_format:
+          column: tier
+          format_type: regex
+          pattern: "^(gold|silver|bronze|basic)$"
 
   - name: "Business Rules"
     level: warning
@@ -156,16 +191,6 @@ checks:
       - custom_sql:
           expression: "age >= 0 AND age <= 120"
 
-  - name: "Information Theory"
-    level: warning
-    description: "Entropy, mutual information, and correlation"
-    rules:
-      # has_correlation – Pearson correlation between two numeric columns
-      - has_correlation:
-          column_a: age
-          column_b: score
-          lte: 0.9
-
   - name: "Cross-Table Comparisons"
     level: error
     description: "Referential integrity, row count match, and schema match between tables"
@@ -179,11 +204,6 @@ checks:
           gte: 1.0
       # row_count_match – compare row counts between two tables
       - row_count_match:
-          table_a: showcase
-          table_b: users
-          eq: 1.0
-      # schema_match – compare schemas between two tables
-      - schema_match:
           table_a: showcase
           table_b: users
           eq: 1.0

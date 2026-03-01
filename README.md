@@ -7,6 +7,7 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 - **High Performance**: Leverages Apache DataFusion for fast data processing and validation.
 - **Flexible Constraints**: Supports various data quality constraints including completeness, uniqueness, and custom assertions.
 - **YAML Configuration**: Define validation suites declaratively using YAML files.
+- **Cloud Object Stores**: Read data directly from Amazon S3 (and S3-compatible services).
 - **Multiple Output Formats**: Results can be formatted as human-readable text, JSON, or Markdown.
 - **Async Support**: Built with asyncio for non-blocking operations.
 - **Easy Integration**: Simple API for defining and running validation suites.
@@ -108,6 +109,32 @@ async def main() -> None:
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+### S3 Object Store Sources
+
+qualink can read data directly from Amazon S3 using DataFusion's built-in `AmazonS3`:
+
+```yaml
+suite:
+  name: "Cloud Data Quality"
+
+data_sources:
+  - store: s3
+    bucket: my-data-lake
+    region: us-east-1
+    format: parquet
+    path: data/users.parquet
+    table_name: users
+
+checks:
+  - name: "Completeness"
+    level: error
+    rules:
+      - is_complete: user_id
+      - is_unique: email
+```
+
+Credentials are read from the YAML or fall back to standard environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.).
 
 ## Constraints
 

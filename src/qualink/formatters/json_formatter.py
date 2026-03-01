@@ -33,6 +33,9 @@ class JsonFormatter(ResultFormatter):
                     "level": str(i.level),
                     "message": i.message,
                     "metric": i.metric,
+                    "column": i.column,
+                    "description": i.description,
+                    **({"extra": i.metadata_extra} if i.metadata_extra else {}),
                 }
                 for i in result.report.issues
             ]

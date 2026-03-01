@@ -1,21 +1,17 @@
-"""Basic validation example using the ValidationSuite API.
-
-All queries run through Apache DataFusion.
-"""
-
 import asyncio
 
 from datafusion import SessionContext
 from qualink.checks import Check, Level
 from qualink.constraints import Assertion
 from qualink.core import ValidationSuite
+from qualink.formatters import MarkdownFormatter
 
 
 async def main() -> None:
     ctx = SessionContext()
     ctx.register_csv("users", "examples/users.csv")
 
-    await (
+    result = await (
         ValidationSuite()
         .on_data(ctx, "users")
         .with_name("User Data Quality")
@@ -39,11 +35,7 @@ async def main() -> None:
         .run()
     )
 
-    # print(HumanFormatter().format(result))
-    # print()
-    # print(JsonFormatter().format(result))
-    # print()
-    # print(MarkdownFormatter().format(result))
+    print(MarkdownFormatter().format(result))
 
 
 if __name__ == "__main__":

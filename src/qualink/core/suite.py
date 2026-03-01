@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from qualink.core.constraint import ConstraintStatus
+from qualink.core.constraint import Constraint, ConstraintStatus
 from qualink.core.level import Level
 from qualink.core.logging_mixin import LoggingMixin
 from qualink.core.result import (
@@ -119,6 +119,9 @@ class ValidationSuiteBuilder(LoggingMixin):
             check_results_map[check.name] = cr.constraint_results
             metrics.total_constraints += len(cr.constraint_results)
 
+            # Build a name→constraint lookup so we can grab metadata
+            constraint_by_name: dict[str, Constraint] = {c.name(): c for c in check.constraints}
+
             for result in cr.constraint_results:
                 if result.status == ConstraintStatus.SUCCESS:
                     metrics.passed += 1
@@ -132,6 +135,13 @@ class ValidationSuiteBuilder(LoggingMixin):
                         metrics.warning_count += 1
                         if worst_status != CheckStatus.ERROR:
                             worst_status = CheckStatus.WARNING
+
+                    # Resolve metadata for this constraint
+                    meta = None
+                    src = constraint_by_name.get(result.constraint_name)
+                    if src is not None:
+                        meta = src.metadata()
+
                     issues.append(
                         ValidationIssue(
                             check_name=check.name,
@@ -139,6 +149,9 @@ class ValidationSuiteBuilder(LoggingMixin):
                             level=check.level,
                             message=result.message,
                             metric=result.metric,
+                            column=meta.column if meta else None,
+                            description=meta.description if meta else "",
+                            metadata_extra=dict(meta.extra) if meta else {},
                         )
                     )
                 else:

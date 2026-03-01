@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from qualink.core.constraint import ConstraintResult
@@ -25,6 +25,9 @@ class ValidationIssue:
     level: Level
     message: str
     metric: float | None = None
+    column: str | None = None
+    description: str = ""
+    metadata_extra: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -90,7 +93,10 @@ class ValidationResult:
         if self.report.issues:
             lines.append("  Issues:")
             for issue in self.report.issues:
+                col_part = f" (column: {issue.column})" if issue.column else ""
+                extra_part = f" {issue.metadata_extra}" if issue.metadata_extra else ""
                 lines.append(
-                    f"    [{issue.level}] {issue.check_name} / {issue.constraint_name}: {issue.message}"
+                    f"    [{issue.level}] {issue.check_name} / "
+                    f"{issue.constraint_name}{col_part}: {issue.message}{extra_part}"
                 )
         return "\n".join(lines)

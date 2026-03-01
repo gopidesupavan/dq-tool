@@ -1,50 +1,3 @@
-"""Suite builder: constructs a ValidationSuite from a parsed YAML dict.
-
-Supports a fully declarative format where each rule maps directly to a
-constraint type registered in :mod:`qualink.config.registry`::
-
-    suite:
-      name: "My Suite"
-
-    data_source:
-      type: csv
-      path: "data.csv"
-      table_name: users
-
-    checks:
-      - name: "Critical Checks"
-        level: error
-        rules:
-          - is_complete: user_id
-          - is_unique: email
-          - has_size:
-              gt: 0
-          - has_column: user_id
-
-      - name: "Data Quality"
-        level: warning
-        rules:
-          - has_completeness:
-              column: name
-              gte: 0.95
-          - has_min:
-              column: age
-              gte: 0
-          - has_max:
-              column: age
-              lte: 120
-          - has_mean:
-              column: age
-              between: [18, 80]
-          - has_pattern:
-              column: email
-              pattern: "@"
-
-Inline bound keys (``gt``, ``gte``, ``lt``, ``lte``, ``eq``, ``between``)
-are automatically converted into assertion shorthands understood by the
-constraint registry — no separate ``assertion`` field needed.
-"""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -98,7 +51,7 @@ def build_suite_from_yaml(
     ready-to-run :class:`ValidationSuiteBuilder`.
 
     If *ctx* is ``None`` a fresh ``SessionContext`` is created and the
-    ``data_source`` block in the YAML is used to register the table.
+    ``data_source`` or ``data_sources`` block in the YAML is used to register tables.
 
     Returns the builder so callers can still chain ``.run()``::
 
@@ -146,19 +99,49 @@ def _build(cfg: dict[str, Any], ctx: SessionContext | None) -> ValidationSuiteBu
 
 
 def _register_source(ctx: SessionContext, ds: dict[str, Any], table_name: str) -> None:
+    from qualink.config.object_store import _resolve_format, build_url, is_object_store
+
+    if is_object_store(ds):
+        _logger.debug("Detected object-store data source for table '%s'", table_name)
+
+        from qualink.config.object_store import register_object_store
+
+        register_object_store(ctx, ds)
+        url = build_url(ds)
+        fmt = _resolve_format(ds)
+        _register_table_by_format(ctx, table_name, url, fmt)
+        return
+
+    # ── Local file data sources ──
     src_type = ds.get("type", "").lower()
     path = ds.get("path", "")
     if not path and src_type not in ("memory", ""):
         _logger.error("data_source requires a 'path' when type is %s", src_type)
         raise ValueError("data_source requires a 'path' when type is csv/parquet/json")
 
-    _logger.debug("Registering data source: type=%s, path='%s', table='%s'", src_type, path, table_name)
-    if src_type == "csv":
-        ctx.register_csv(table_name, path)
-    elif src_type == "parquet":
-        ctx.register_parquet(table_name, path)
-    elif src_type == "json":
-        ctx.register_json(table_name, path)
+    _logger.debug("Registering local data source: type=%s, path='%s', table='%s'", src_type, path, table_name)
+    _register_table_by_format(ctx, table_name, path, src_type)
+
+
+def _register_table_by_format(ctx: SessionContext, table_name: str, path_or_url: str, fmt: str) -> None:
+    """Register a table with DataFusion using the appropriate format-specific method.
+
+    Args:
+        ctx: DataFusion SessionContext
+        table_name: Name for the registered table
+        path_or_url: Local file path or S3 URL
+        fmt: File format ('csv', 'parquet', 'json')
+    """
+    _logger.debug("Registering table '%s' from %s (%s format)", table_name, path_or_url, fmt)
+
+    if fmt == "csv":
+        ctx.register_csv(table_name, path_or_url)
+    elif fmt == "parquet":
+        ctx.register_parquet(table_name, path_or_url)
+    elif fmt == "json":
+        ctx.register_json(table_name, path_or_url)
+    else:
+        raise ValueError(f"Unsupported file format '{fmt}' for data source. Use csv, parquet, or json.")
 
 
 def _build_check(check_cfg: dict[str, Any]) -> Check:

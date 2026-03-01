@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from tabulate import tabulate
+
 if TYPE_CHECKING:
     from qualink.core.result import ValidationResult
 
@@ -28,32 +30,61 @@ class HumanFormatter(ResultFormatter):
         lines.append("")
 
         if self._config.show_metrics:
-            lines.append(f"  Checks: {m.total_checks}  |  Constraints: {m.total_constraints}")
-            lines.append(
-                f"  Passed: {self._colour(str(m.passed), self._GREEN)}  |  "
-                f"Failed: {self._colour(str(m.failed), self._RED)}  |  "
-                f"Skipped: {m.skipped}"
-            )
-            lines.append(f"  Pass rate: {m.pass_rate:.1%}")
+            metrics_table = [
+                ["Checks", m.total_checks],
+                ["Constraints", m.total_constraints],
+                ["Passed", self._colour(str(m.passed), self._GREEN)],
+                ["Failed", self._colour(str(m.failed), self._RED)],
+                ["Skipped", m.skipped],
+                ["Pass rate", f"{m.pass_rate:.1%}"],
+            ]
+            lines.append(tabulate(metrics_table, tablefmt="plain"))
             lines.append("")
 
+        constraint_rows: list[list[str]] = []
         for check_name, results in result.report.check_results.items():
             for cr in results:
                 if cr.status == ConstraintStatus.SUCCESS and not self._config.show_passed:
                     continue
                 icon = self._status_icon(cr.status)
                 msg = cr.message or cr.constraint_name
-                lines.append(f"  {icon} [{check_name}] {msg}")
+                constraint_rows.append([icon, check_name, msg])
+
+        if constraint_rows:
+            lines.append(tabulate(constraint_rows, headers=["Status", "Check", "Message"], tablefmt="simple"))
+            lines.append("")
 
         if self._config.show_issues and result.report.issues:
-            lines.append("")
             lines.append(self._bold("Issues:"))
+            issue_rows: list[list[str]] = []
             for issue in result.report.issues:
                 level_colour = self._RED if issue.level.name == "ERROR" else self._YELLOW
-                lines.append(
-                    f"  {self._colour(str(issue.level).upper(), level_colour)} "
-                    f"{issue.check_name} / {issue.constraint_name}: {issue.message}"
+                col_info = issue.column or "-"
+                desc_info = issue.description if issue.description else "-"
+                extra_info = (
+                    ", ".join(f"{k}={v}" for k, v in issue.metadata_extra.items())
+                    if issue.metadata_extra
+                    else "-"
                 )
+                issue_rows.append(
+                    [
+                        self._colour(str(issue.level).upper(), level_colour),
+                        issue.check_name,
+                        issue.constraint_name,
+                        col_info,
+                        issue.message,
+                        desc_info,
+                        extra_info,
+                    ]
+                )
+            lines.append(
+                tabulate(
+                    issue_rows,
+                    headers=["Level", "Check", "Constraint", "Column", "Message", "Description", "Extra"],
+                    tablefmt="simple",
+                )
+            )
+
         output = "\n".join(lines)
         self.logger.debug("Human format output: %d chars", len(output))
         return output
