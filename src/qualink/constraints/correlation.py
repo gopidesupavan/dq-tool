@@ -35,15 +35,7 @@ class CorrelationConstraint(Constraint):
     async def evaluate(self, ctx: SessionContext, table_name: str) -> ConstraintResult:
         a, b = self._col_a, self._col_b
         sql = (
-            f"SELECT "
-            f'(COUNT(*) * SUM(CAST("{a}" AS DOUBLE) * CAST("{b}" AS DOUBLE)) '
-            f' - SUM(CAST("{a}" AS DOUBLE)) * SUM(CAST("{b}" AS DOUBLE))) '
-            f"/ GREATEST(SQRT("
-            f'  (COUNT(*) * SUM(CAST("{a}" AS DOUBLE) * CAST("{a}" AS DOUBLE)) '
-            f'   - POWER(SUM(CAST("{a}" AS DOUBLE)), 2)) * '
-            f'  (COUNT(*) * SUM(CAST("{b}" AS DOUBLE) * CAST("{b}" AS DOUBLE)) '
-            f'   - POWER(SUM(CAST("{b}" AS DOUBLE)), 2))'
-            f"), 1e-15) AS corr "
+            f'SELECT CORR(CAST("{a}" AS DOUBLE), CAST("{b}" AS DOUBLE)) AS corr '
             f'FROM {table_name} WHERE "{a}" IS NOT NULL AND "{b}" IS NOT NULL'
         )
         self.logger.debug("Executing SQL: %s", sql)

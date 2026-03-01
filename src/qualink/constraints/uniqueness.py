@@ -29,11 +29,9 @@ class UniquenessConstraint(Constraint):
         where_clause = " AND ".join(f'"{c}" IS NOT NULL' for c in self._columns)
 
         sql = (
-            f"SELECT CAST(cnt_distinct AS DOUBLE) / CAST(GREATEST(cnt_total, 1) AS DOUBLE) "
-            f"AS uniqueness FROM ("
-            f"  SELECT COUNT(DISTINCT ({cols})) AS cnt_distinct, COUNT(*) AS cnt_total "
-            f"  FROM {table_name} WHERE {where_clause}"
-            f")"
+            f"SELECT CAST(COUNT(DISTINCT ({cols})) AS DOUBLE) "
+            f"/ CAST(GREATEST(COUNT(*), 1) AS DOUBLE) AS uniqueness "
+            f"FROM {table_name} WHERE {where_clause}"
         )
         self.logger.debug("Executing SQL: %s", sql)
         df = ctx.sql(sql)

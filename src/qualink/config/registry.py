@@ -159,6 +159,12 @@ _DEFS: list[ConstraintDef] = [
         "qualink.constraints.statistics:StatisticalConstraint",
         extra={"stat": "STDDEV"},
     ),
+    ConstraintDef(
+        ("median", "has_median"),
+        Kind.STAT,
+        "qualink.constraints.statistics:StatisticalConstraint",
+        extra={"stat": "MEDIAN"},
+    ),
     # special cases with custom builders
     ConstraintDef(
         ("compliance", "satisfies"),

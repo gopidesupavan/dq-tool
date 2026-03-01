@@ -24,8 +24,7 @@ class CompletenessConstraint(Constraint):
 
     async def evaluate(self, ctx: SessionContext, table_name: str) -> ConstraintResult:
         sql = (
-            f"SELECT "
-            f'1.0 - CAST(COUNT(*) - COUNT("{self._column}") AS DOUBLE) '
+            f'SELECT CAST(COUNT("{self._column}") AS DOUBLE) '
             f"/ CAST(GREATEST(COUNT(*), 1) AS DOUBLE) AS completeness "
             f"FROM {table_name}"
         )

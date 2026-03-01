@@ -57,12 +57,11 @@ class FormatConstraint(Constraint):
         escaped = self._pattern.replace("'", "''")
         col_expr = f'CAST("{self._column}" AS VARCHAR)'
         sql = (
-            f"SELECT CAST(SUM(CASE WHEN {col_expr} ~ '{escaped}' "
-            f"THEN 1 ELSE 0 END) AS DOUBLE) "
-            f'/ CAST(GREATEST(COUNT("{self._column}"), 1) AS DOUBLE) AS compliance '
+            f"SELECT AVG(CASE WHEN {col_expr} ~ '{escaped}' "
+            f"THEN 1.0 ELSE 0.0 END) AS compliance "
             f'FROM {table_name} WHERE "{self._column}" IS NOT NULL'
         )
-        self.logger.debug("Executing SQL: %s", sql)
+        self.logger.info("Executing SQL: %s", sql)
         df = ctx.sql(sql)
         rows = df.collect()
         compliance: float = rows[0].column("compliance")[0].as_py()

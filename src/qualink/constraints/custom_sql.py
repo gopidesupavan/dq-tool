@@ -26,9 +26,7 @@ class CustomSqlConstraint(Constraint):
 
     async def evaluate(self, ctx: SessionContext, table_name: str) -> ConstraintResult:
         sql = (
-            f"SELECT "
-            f"CAST(SUM(CASE WHEN {self._expression} THEN 1 ELSE 0 END) AS DOUBLE) "
-            f"/ CAST(GREATEST(COUNT(*), 1) AS DOUBLE) AS compliance "
+            f"SELECT AVG(CASE WHEN {self._expression} THEN 1.0 ELSE 0.0 END) AS compliance "
             f"FROM {table_name}"
         )
         self.logger.debug("Executing SQL: %s", sql)

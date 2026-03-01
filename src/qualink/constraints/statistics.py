@@ -17,13 +17,18 @@ from qualink.core.constraint import (
 
 
 class StatisticType(Enum):
-    """The aggregate function to compute before applying an assertion."""
+    """The aggregate function to compute before applying an assertion.
+
+    Uses DataFusion built-in aggregate functions directly:
+    https://datafusion.apache.org/user-guide/sql/aggregate_functions.html
+    """
 
     MIN = "MIN"
     MAX = "MAX"
     MEAN = "AVG"
     SUM = "SUM"
     STDDEV = "STDDEV"
+    MEDIAN = "MEDIAN"
 
     @property
     def sql_fn(self) -> str:

@@ -183,3 +183,6 @@ docs/node_modules/
 docs/_site/
 docs/.cache/
 /tempwrkpc/
+
+# Benchmark data (downloaded via benchmarks/download_data.sh)
+benchmarks/data/

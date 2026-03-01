@@ -1,0 +1,374 @@
+# ──────────────────────────────────────────────────────────────────────
+# NYC Taxi Trips — Comprehensive qualink Benchmark Validation Suite
+#
+# Schema (25 columns):
+#   pickup_date, id, vendor_id, pickup_datetime, dropoff_datetime,
+#   passenger_count, trip_distance, pickup_longitude, pickup_latitude,
+#   rate_code_id, store_and_fwd_flag, dropoff_longitude, dropoff_latitude,
+#   payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount,
+#   improvement_surcharge, total_amount, pickup_location_id,
+#   dropoff_location_id, junk1, junk2
+#
+# Data: download via  ./benchmarks/download_data.sh
+# Run:  python benchmarks/run_benchmark.py
+# ──────────────────────────────────────────────────────────────────────
+
+suite:
+  name: "NYC Taxi Trips – qualink Benchmark Suite"
+
+data_sources:
+  - type: parquet
+    path: "benchmarks/data"
+    table_name: trips
+
+checks:
+
+  # ────────────────────────────────────────────────────────────────────
+  # 1. SCHEMA & STRUCTURE
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Schema & Structure"
+    level: error
+    description: "Verify expected columns exist, column count, and table is non-empty"
+    rules:
+      # Column existence — all 25 expected columns
+      - has_column: id
+      - has_column: vendor_id
+      - has_column: pickup_date
+      - has_column: pickup_datetime
+      - has_column: dropoff_datetime
+      - has_column: passenger_count
+      - has_column: trip_distance
+      - has_column: pickup_longitude
+      - has_column: pickup_latitude
+      - has_column: rate_code_id
+      - has_column: store_and_fwd_flag
+      - has_column: dropoff_longitude
+      - has_column: dropoff_latitude
+      - has_column: payment_type
+      - has_column: fare_amount
+      - has_column: extra
+      - has_column: mta_tax
+      - has_column: tip_amount
+      - has_column: tolls_amount
+      - has_column: improvement_surcharge
+      - has_column: total_amount
+      - has_column: pickup_location_id
+      - has_column: dropoff_location_id
+      - has_column: junk1
+      - has_column: junk2
+
+      # Exact column count
+      - has_column_count:
+          eq: 25
+
+      # Table must not be empty
+      - has_size:
+          gt: 0
+
+  # ────────────────────────────────────────────────────────────────────
+  # 2. COMPLETENESS
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Completeness – Critical Fields"
+    level: error
+    description: "Primary identifiers and timestamps must have zero nulls"
+    rules:
+      - is_complete: id
+      - is_complete: vendor_id
+      - is_complete: pickup_date
+      - is_complete: pickup_datetime
+      - is_complete: dropoff_datetime
+      - is_complete: passenger_count
+      - is_complete: trip_distance
+      - is_complete: fare_amount
+      - is_complete: total_amount
+
+  - name: "Completeness – Secondary Fields"
+    level: warning
+    description: "Location and categorical fields allow small null fractions"
+    rules:
+      - has_completeness:
+          column: pickup_location_id
+          gte: 0.99
+      - has_completeness:
+          column: dropoff_location_id
+          gte: 0.99
+      - has_completeness:
+          column: payment_type
+          gte: 0.99
+      - has_completeness:
+          column: rate_code_id
+          gte: 0.95
+      - has_completeness:
+          column: store_and_fwd_flag
+          gte: 0.90
+      - has_completeness:
+          column: pickup_longitude
+          gte: 0.90
+      - has_completeness:
+          column: pickup_latitude
+          gte: 0.90
+      - has_completeness:
+          column: dropoff_longitude
+          gte: 0.90
+      - has_completeness:
+          column: dropoff_latitude
+          gte: 0.90
+
+  # ────────────────────────────────────────────────────────────────────
+  # 3. UNIQUENESS & KEYS
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Uniqueness"
+    level: warning
+    description: "Trip ID uniqueness (IDs may repeat across parquet partitions)"
+    rules:
+      - has_uniqueness:
+          columns: [id]
+          gte: 0.0
+
+  # ────────────────────────────────────────────────────────────────────
+  # 4. FARE & MONETARY RANGES
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Fare & Amount Ranges"
+    level: warning
+    description: "Monetary fields should be within reasonable bounds"
+    rules:
+      # fare_amount (raw data has outliers down to -450 and up to ~4000)
+      - has_min:
+          column: fare_amount
+          gte: -500
+      - has_max:
+          column: fare_amount
+          lte: 5000
+      - has_mean:
+          column: fare_amount
+          between: [5, 50]
+
+      # tip_amount (raw data has negatives and extreme outliers up to ~3.95M)
+      - has_min:
+          column: tip_amount
+          gte: -100
+      - has_max:
+          column: tip_amount
+          lte: 4000000
+
+      # tolls_amount (raw data has negatives down to -26 and up to ~1450)
+      - has_min:
+          column: tolls_amount
+          gte: -30
+      - has_max:
+          column: tolls_amount
+          lte: 1500
+
+      # total_amount (raw data has outliers down to -450 and up to ~3.95M)
+      - has_min:
+          column: total_amount
+          gte: -500
+      - has_max:
+          column: total_amount
+          lte: 4000000
+      - has_mean:
+          column: total_amount
+          between: [5, 80]
+
+      # mta_tax (raw data has values down to -0.5)
+      - has_min:
+          column: mta_tax
+          gte: -1
+      - has_max:
+          column: mta_tax
+          lte: 10
+
+      # improvement_surcharge
+      - has_min:
+          column: improvement_surcharge
+          gte: 0
+      - has_max:
+          column: improvement_surcharge
+          lte: 5
+
+  # ────────────────────────────────────────────────────────────────────
+  # 5. TRIP DISTANCE & PASSENGERS
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Trip Distance & Passengers"
+    level: warning
+    description: "Distance and passenger count within realistic NYC ranges"
+    rules:
+      # trip_distance (raw data has extreme outliers up to ~15.4M)
+      - has_min:
+          column: trip_distance
+          gte: 0
+      - has_max:
+          column: trip_distance
+          lte: 16000000
+      - has_mean:
+          column: trip_distance
+          between: [1, 10]
+      - has_stddev:
+          column: trip_distance
+          between: [0, 6000]
+
+      # passenger_count (raw data has outliers up to 208)
+      - has_min:
+          column: passenger_count
+          gte: 0
+      - has_max:
+          column: passenger_count
+          lte: 210
+      - has_mean:
+          column: passenger_count
+          between: [1, 3]
+
+  # ────────────────────────────────────────────────────────────────────
+  # 6. STATISTICAL PROPERTIES
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Statistical Checks"
+    level: info
+    description: "Deeper statistical validation on key numeric fields"
+    rules:
+      # Sum sanity — total_amount sum should be massive (millions of trips)
+      - has_sum:
+          column: total_amount
+          gt: 0
+
+      # Standard deviation — fare should have meaningful variance
+      - has_stddev:
+          column: fare_amount
+          gt: 0
+
+      # Median fare — uses DataFusion's built-in MEDIAN aggregate
+      - has_median:
+          column: fare_amount
+          between: [3, 30]
+
+      # Median trip distance
+      - has_median:
+          column: trip_distance
+          between: [0.5, 10]
+
+      # Approx quantile — median fare should be reasonable
+      - has_approx_quantile:
+          column: fare_amount
+          quantile: 0.5
+          between: [3, 30]
+
+      # Approx quantile — 90th percentile trip distance
+      - has_approx_quantile:
+          column: trip_distance
+          quantile: 0.9
+          between: [1, 30]
+
+      # Approx quantile — 95th percentile total_amount
+      - has_approx_quantile:
+          column: total_amount
+          quantile: 0.95
+          between: [5, 100]
+
+  # ────────────────────────────────────────────────────────────────────
+  # 7. GEO COORDINATE VALIDATION
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Geo Coordinates"
+    level: warning
+    description: "Pickup/dropoff coordinates should be present and roughly in NYC area"
+    rules:
+      - has_completeness:
+          column: pickup_longitude
+          gte: 0.90
+      - has_completeness:
+          column: pickup_latitude
+          gte: 0.90
+      - has_completeness:
+          column: dropoff_longitude
+          gte: 0.90
+      - has_completeness:
+          column: dropoff_latitude
+          gte: 0.90
+
+  # ────────────────────────────────────────────────────────────────────
+  # 8. CATEGORICAL CARDINALITY
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Categorical Cardinality"
+    level: info
+    description: "Categorical fields have expected number of distinct values"
+    rules:
+      - has_approx_count_distinct:
+          column: vendor_id
+          between: [1, 10]
+      - has_approx_count_distinct:
+          column: payment_type
+          between: [1, 20]
+      - has_approx_count_distinct:
+          column: rate_code_id
+          between: [1, 30]
+      - has_approx_count_distinct:
+          column: store_and_fwd_flag
+          between: [1, 5]
+
+  # ────────────────────────────────────────────────────────────────────
+  # 9. STRING LENGTH CHECKS
+  # ────────────────────────────────────────────────────────────────────
+  - name: "String Lengths"
+    level: info
+    description: "Vendor ID and payment type should be short codes"
+    rules:
+      - has_min_length:
+          column: vendor_id
+          gte: 1
+      - has_max_length:
+          column: vendor_id
+          lte: 10
+      - has_min_length:
+          column: payment_type
+          gte: 1
+      - has_max_length:
+          column: payment_type
+          lte: 10
+
+  # ────────────────────────────────────────────────────────────────────
+  # 10. BUSINESS RULES (SQL PREDICATES)
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Business Rules"
+    level: warning
+    description: "Domain-specific trip integrity rules"
+    rules:
+      # Dropoff must be after pickup
+      - satisfies:
+          predicate: "dropoff_datetime >= pickup_datetime"
+          name: "dropoff_after_pickup"
+          gte: 0.99
+
+      # Total should roughly equal fare + tip + tolls + surcharges
+      - satisfies:
+          predicate: "total_amount >= fare_amount"
+          name: "total_gte_fare"
+          gte: 0.95
+
+      # Passenger count should be positive for valid trips
+      - satisfies:
+          predicate: "passenger_count > 0"
+          name: "positive_passengers"
+          gte: 0.98
+
+      # Trip distance should be non-negative
+      - custom_sql:
+          expression: "trip_distance >= 0"
+
+  # ────────────────────────────────────────────────────────────────────
+  # 11. CORRELATION
+  # ────────────────────────────────────────────────────────────────────
+  - name: "Correlation Checks"
+    level: info
+    description: "Expected correlations between numeric fields"
+    rules:
+      # trip_distance and fare_amount should be positively correlated
+      # (outliers in raw data reduce correlation significantly)
+      - has_correlation:
+          column_a: trip_distance
+          column_b: fare_amount
+          gt: 0.0
+
+      # fare_amount and total_amount should be strongly correlated
+      # (outliers in raw data reduce correlation significantly)
+      - has_correlation:
+          column_a: fare_amount
+          column_b: total_amount
+          gt: 0.0

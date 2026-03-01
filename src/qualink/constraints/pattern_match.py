@@ -35,9 +35,8 @@ class PatternMatchConstraint(Constraint):
         escaped = self._pattern.replace("'", "''")
         col_expr = f'CAST("{self._column}" AS VARCHAR)'
         sql = (
-            f"SELECT CAST(SUM(CASE WHEN {col_expr} ~ '{escaped}' "
-            f"THEN 1 ELSE 0 END) AS DOUBLE) "
-            f'/ CAST(GREATEST(COUNT("{self._column}"), 1) AS DOUBLE) AS match_ratio '
+            f"SELECT AVG(CASE WHEN {col_expr} ~ '{escaped}' "
+            f"THEN 1.0 ELSE 0.0 END) AS match_ratio "
             f'FROM {table_name} WHERE "{self._column}" IS NOT NULL'
         )
         self.logger.debug("Executing SQL: %s", sql)
