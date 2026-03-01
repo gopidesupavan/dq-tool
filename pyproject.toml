@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "qualink"
-version = "0.0.1"
+version = "0.0.2"
 description = "Blazing fast data quality framework for Python, built on Apache DataFusion"
 readme = "README.md"
 license = "Apache-2.0"
