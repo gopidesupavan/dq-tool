@@ -23,6 +23,7 @@ class JsonFormatter(ResultFormatter):
                 "failed": m.failed,
                 "skipped": m.skipped,
                 "pass_rate": round(m.pass_rate, 4),
+                "execution_time_ms": m.execution_time_ms,
             },
         }
         if self._config.show_issues and result.report.issues:

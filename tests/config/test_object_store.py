@@ -117,83 +117,14 @@ class TestSupportedStores:
 
 class TestBuildS3:
     @patch("datafusion.object_store.AmazonS3")
-    def test_basic(self, mock_s3_class):
-        mock_s3_class.return_value = MagicMock()
-
-        ds = {"store": "s3", "bucket": "bkt", "region": "us-east-1"}
-        result = _build_s3(ds, "bkt")
-
-        mock_s3_class.assert_called_once_with(bucket_name="bkt", region="us-east-1")
-        assert result is not None
-
-    @patch("datafusion.object_store.AmazonS3")
-    def test_with_credentials(self, mock_s3_class):
-        mock_s3_class.return_value = MagicMock()
-
-        ds = {
-            "store": "s3",
-            "bucket": "bkt",
-            "region": "eu-west-1",
-            "access_key_id": "AKIA123",
-            "secret_access_key": "secret123",
-        }
-        _build_s3(ds, "bkt")
-
-        mock_s3_class.assert_called_once_with(
-            bucket_name="bkt",
-            region="eu-west-1",
-            access_key_id="AKIA123",
-            secret_access_key="secret123",
-        )
-
-    @patch("datafusion.object_store.AmazonS3")
-    def test_with_endpoint(self, mock_s3_class):
-        mock_s3_class.return_value = MagicMock()
-
-        ds = {
-            "store": "s3",
-            "bucket": "bkt",
-            "endpoint": "http://localhost:9000",
-            "allow_http": True,
-        }
-        _build_s3(ds, "bkt")
-
-        mock_s3_class.assert_called_once_with(
-            bucket_name="bkt",
-            endpoint="http://localhost:9000",
-            allow_http=True,
-        )
-
-    @patch("datafusion.object_store.AmazonS3")
-    def test_with_session_token(self, mock_s3_class):
-        mock_s3_class.return_value = MagicMock()
-
-        ds = {
-            "store": "s3",
-            "bucket": "bkt",
-            "region": "us-east-1",
-            "access_key_id": "AKIA123",
-            "secret_access_key": "secret123",
-            "session_token": "tok123",
-        }
-        _build_s3(ds, "bkt")
-
-        mock_s3_class.assert_called_once_with(
-            bucket_name="bkt",
-            region="us-east-1",
-            access_key_id="AKIA123",
-            secret_access_key="secret123",
-            session_token="tok123",
-        )
-
-    @patch("datafusion.object_store.AmazonS3")
     def test_minimal_bucket_only(self, mock_s3_class):
         mock_s3_class.return_value = MagicMock()
 
         ds = {"store": "s3", "bucket": "bkt"}
-        _build_s3(ds, "bkt")
+        result = _build_s3(ds, "bkt")
 
         mock_s3_class.assert_called_once_with(bucket_name="bkt")
+        assert result is not None
 
     @patch.dict(
         "os.environ",
@@ -204,7 +135,7 @@ class TestBuildS3:
         },
     )
     @patch("datafusion.object_store.AmazonS3")
-    def test_env_var_fallback(self, mock_s3_class):
+    def test_credentials_from_env(self, mock_s3_class):
         mock_s3_class.return_value = MagicMock()
 
         ds = {"store": "s3", "bucket": "bkt"}
@@ -228,16 +159,64 @@ class TestBuildS3:
         call_kwargs = mock_s3_class.call_args.kwargs
         assert call_kwargs["region"] == "eu-central-1"
 
+    @patch.dict(
+        "os.environ",
+        {
+            "AWS_ACCESS_KEY_ID": "AKIA123",
+            "AWS_SECRET_ACCESS_KEY": "secret123",
+            "AWS_SESSION_TOKEN": "tok123",
+        },
+    )
     @patch("datafusion.object_store.AmazonS3")
-    def test_yaml_takes_precedence_over_env(self, mock_s3_class):
-        """YAML fields override env vars."""
+    def test_session_token_from_env(self, mock_s3_class):
         mock_s3_class.return_value = MagicMock()
 
-        with patch.dict("os.environ", {"AWS_DEFAULT_REGION": "env-region"}):
-            ds = {"store": "s3", "bucket": "bkt", "region": "yaml-region"}
-            _build_s3(ds, "bkt")
+        ds = {"store": "s3", "bucket": "bkt"}
+        _build_s3(ds, "bkt")
 
-        mock_s3_class.assert_called_once_with(bucket_name="bkt", region="yaml-region")
+        mock_s3_class.assert_called_once_with(
+            bucket_name="bkt",
+            access_key_id="AKIA123",
+            secret_access_key="secret123",
+            session_token="tok123",
+        )
+
+    @patch.dict(
+        "os.environ",
+        {
+            "AWS_ENDPOINT_URL": "http://localhost:9000",
+            "AWS_ALLOW_HTTP": "true",
+        },
+    )
+    @patch("datafusion.object_store.AmazonS3")
+    def test_endpoint_from_env(self, mock_s3_class):
+        mock_s3_class.return_value = MagicMock()
+
+        ds = {"store": "s3", "bucket": "bkt"}
+        _build_s3(ds, "bkt")
+
+        mock_s3_class.assert_called_once_with(
+            bucket_name="bkt",
+            endpoint="http://localhost:9000",
+            allow_http=True,
+        )
+
+    @patch("datafusion.object_store.AmazonS3")
+    def test_yaml_credentials_ignored(self, mock_s3_class):
+        """Credential fields in YAML are ignored; only env vars are used."""
+        mock_s3_class.return_value = MagicMock()
+
+        ds = {
+            "store": "s3",
+            "bucket": "bkt",
+            "region": "yaml-region",
+            "access_key_id": "YAML_KEY",
+            "secret_access_key": "YAML_SECRET",
+        }
+        _build_s3(ds, "bkt")
+
+        # Only bucket_name should be passed — YAML creds are not read
+        mock_s3_class.assert_called_once_with(bucket_name="bkt")
 
 
 # ── register_object_store ────────────────────────────────────────────────

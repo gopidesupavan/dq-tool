@@ -32,6 +32,7 @@ class MarkdownFormatter(ResultFormatter):
             ["Failed", m.failed],
             ["Skipped", m.skipped],
             ["Pass rate", f"{m.pass_rate:.1%}"],
+            ["Execution time", f"{m.execution_time_ms} ms"],
         ]
         lines.append(tabulate(metrics_table, headers=["Metric", "Value"], tablefmt="github"))
 

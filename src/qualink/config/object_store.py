@@ -85,15 +85,35 @@ def _resolve_format(ds: dict[str, Any]) -> str:
 
 
 def _build_s3(ds: dict[str, Any], bucket: str) -> Any:
-    """Build an ``AmazonS3`` instance from YAML config + env vars."""
+    """Build an ``AmazonS3`` instance from environment variables.
+
+    All credentials and connection settings are read exclusively from
+    environment variables.  The YAML config only supplies ``bucket``,
+    ``path``, ``format``, and ``table_name``.
+
+    Recognised environment variables
+    --------------------------------
+    ``AWS_DEFAULT_REGION`` / ``AWS_REGION``
+        AWS region for the bucket.
+    ``AWS_ACCESS_KEY_ID``
+        AWS access key.
+    ``AWS_SECRET_ACCESS_KEY``
+        AWS secret key.
+    ``AWS_SESSION_TOKEN``
+        Temporary session token (optional).
+    ``AWS_ENDPOINT_URL``
+        Custom endpoint for S3-compatible services (MinIO, R2, …).
+    ``AWS_ALLOW_HTTP``
+        Set to ``true`` to allow plain HTTP endpoints.
+    """
     from datafusion.object_store import AmazonS3
 
-    region = ds.get("region") or os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION")
-    access_key_id = ds.get("access_key_id") or os.environ.get("AWS_ACCESS_KEY_ID")
-    secret_access_key = ds.get("secret_access_key") or os.environ.get("AWS_SECRET_ACCESS_KEY")
-    session_token = ds.get("session_token") or os.environ.get("AWS_SESSION_TOKEN")
-    endpoint = ds.get("endpoint") or os.environ.get("AWS_ENDPOINT_URL")
-    allow_http = ds.get("allow_http", False)
+    region = os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION")
+    access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
+    secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    session_token = os.environ.get("AWS_SESSION_TOKEN")
+    endpoint = os.environ.get("AWS_ENDPOINT_URL")
+    allow_http = os.environ.get("AWS_ALLOW_HTTP", "").lower() == "true"
 
     kwargs: dict[str, Any] = {"bucket_name": bucket}
 

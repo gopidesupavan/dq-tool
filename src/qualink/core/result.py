@@ -89,6 +89,7 @@ class ValidationResult:
             f"Validation {label}: {self.report.suite_name}",
             f"  Checks: {m.total_checks} | Constraints: {m.total_constraints}",
             f"  Passed: {m.passed} | Failed: {m.failed} | Skipped: {m.skipped}",
+            f"  Execution time: {m.execution_time_ms} ms",
         ]
         if self.report.issues:
             lines.append("  Issues:")

@@ -102,11 +102,12 @@ class TestValidationResult:
 
     def test_str_method(self) -> None:
         # Test successful result
-        report = ValidationReport("suite", ValidationMetrics(total_checks=1, passed=1))
+        report = ValidationReport("suite", ValidationMetrics(total_checks=1, passed=1, execution_time_ms=42))
         result = ValidationResult(success=True, status=CheckStatus.SUCCESS, report=report)
         str_repr = str(result)
         assert "PASSED" in str_repr
         assert "suite" in str_repr
+        assert "Execution time: 42 ms" in str_repr
 
         # Test failed result with issues
         issue = ValidationIssue("check", "con", Level.ERROR, "msg")

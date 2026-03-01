@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import TYPE_CHECKING
 
 from qualink.core.constraint import Constraint, ConstraintStatus
@@ -93,6 +94,8 @@ class ValidationSuiteBuilder(LoggingMixin):
             self.logger.error("No data context set — call .on_data(ctx, table) before .run()")
             raise RuntimeError("No data context set. Call .on_data(ctx, table) before .run().")
 
+        start_time = time.perf_counter()
+
         self.logger.info(
             "Suite '%s' started — running %d check(s) on table '%s'",
             self._name,
@@ -157,6 +160,9 @@ class ValidationSuiteBuilder(LoggingMixin):
                 else:
                     metrics.skipped += 1
 
+        elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+        metrics.execution_time_ms = elapsed_ms
+
         report = ValidationReport(
             suite_name=self._name,
             metrics=metrics,
@@ -173,22 +179,24 @@ class ValidationSuiteBuilder(LoggingMixin):
         pass_rate = metrics.pass_rate
         if overall_success:
             self.logger.info(
-                "Suite '%s' completed — PASSED (pass_rate=%.1f%%, passed=%d, failed=%d)",
+                "Suite '%s' completed — PASSED (pass_rate=%.1f%%, passed=%d, failed=%d, time=%dms)",
                 self._name,
                 pass_rate * 100,
                 metrics.passed,
                 metrics.failed,
+                elapsed_ms,
             )
         else:
             self.logger.error(
                 "Suite '%s' completed — FAILED "
-                "(pass_rate=%.1f%%, passed=%d, failed=%d, errors=%d, warnings=%d)",
+                "(pass_rate=%.1f%%, passed=%d, failed=%d, errors=%d, warnings=%d, time=%dms)",
                 self._name,
                 pass_rate * 100,
                 metrics.passed,
                 metrics.failed,
                 metrics.error_count,
                 metrics.warning_count,
+                elapsed_ms,
             )
 
         return result

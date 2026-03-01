@@ -57,34 +57,39 @@ Supported source types: `csv`, `parquet`, `json`.
 
 qualink supports reading data directly from Amazon S3 using DataFusion's built-in `AmazonS3` — no extra dependencies needed.
 
+All credentials and connection settings are read exclusively from **environment variables**. The YAML config only supplies `bucket`, `path`, `format`, and `table_name`.
+
 #### Amazon S3
 
 ```yaml
 data_source:
   store: s3
   bucket: my-data-bucket
-  region: us-east-1
   format: parquet
   path: data/users.parquet
   table_name: users
 ```
 
-S3-compatible services (MinIO, Cloudflare R2) are also supported:
+Set your credentials via environment variables before running:
 
-```yaml
-data_source:
-  store: s3
-  bucket: my-bucket
-  endpoint: http://localhost:9000
-  allow_http: true
-  access_key_id: minioadmin
-  secret_access_key: minioadmin
-  format: csv
-  path: data/users.csv
-  table_name: users
+```bash
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ACCESS_KEY_ID=AKIA...
+export AWS_SECRET_ACCESS_KEY=wJalr...
 ```
 
-#### S3 Configuration Reference
+#### Environment Variable Reference
+
+| Variable | Description |
+|----------|-------------|
+| `AWS_DEFAULT_REGION` / `AWS_REGION` | AWS region for the bucket |
+| `AWS_ACCESS_KEY_ID` | AWS access key |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key |
+| `AWS_SESSION_TOKEN` | Temporary session token (optional) |
+| `AWS_ENDPOINT_URL` | Custom endpoint for MinIO, R2, etc. |
+| `AWS_ALLOW_HTTP` | Set to `true` to allow plain HTTP endpoints |
+
+#### S3 YAML Configuration Reference
 
 | Field | Description | Required |
 |-------|-------------|----------|
@@ -93,14 +98,8 @@ data_source:
 | `path` | Object key / prefix within the bucket | No |
 | `format` | File format: `csv`, `parquet`, `json` (auto-detected from extension if omitted) | No |
 | `table_name` | DataFusion table name | Yes |
-| `region` | AWS region (fallback: `AWS_DEFAULT_REGION` / `AWS_REGION`) | No |
-| `access_key_id` | AWS access key (fallback: `AWS_ACCESS_KEY_ID`) | No |
-| `secret_access_key` | AWS secret key (fallback: `AWS_SECRET_ACCESS_KEY`) | No |
-| `session_token` | AWS session token (fallback: `AWS_SESSION_TOKEN`) | No |
-| `endpoint` | Custom endpoint URL for MinIO, R2, etc. (fallback: `AWS_ENDPOINT_URL`) | No |
-| `allow_http` | Allow HTTP (non-TLS) endpoints | No |
 
-> **Tip:** Credentials can be set via environment variables instead of including them in the YAML file. This is the recommended approach for production use.
+> **Security:** Credentials are never stored in YAML files. Always use environment variables to configure AWS credentials and connection settings.
 
 #### Multiple S3 Sources
 

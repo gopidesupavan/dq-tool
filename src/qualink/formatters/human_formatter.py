@@ -37,6 +37,7 @@ class HumanFormatter(ResultFormatter):
                 ["Failed", self._colour(str(m.failed), self._RED)],
                 ["Skipped", m.skipped],
                 ["Pass rate", f"{m.pass_rate:.1%}"],
+                ["Execution time", f"{m.execution_time_ms} ms"],
             ]
             lines.append(tabulate(metrics_table, tablefmt="plain"))
             lines.append("")

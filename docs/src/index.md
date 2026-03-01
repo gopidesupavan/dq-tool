@@ -56,6 +56,7 @@ from datafusion import SessionContext
 from qualink.checks import Check, Level
 from qualink.constraints import Assertion
 from qualink.core import ValidationSuite
+from qualink.formatters import MarkdownFormatter
 
 async def main():
     ctx = SessionContext()
@@ -75,7 +76,7 @@ async def main():
         )
         .run()
     )
-    print(result)
+    print(MarkdownFormatter().format(result))
 
 asyncio.run(main())</code></pre>
 </section>
