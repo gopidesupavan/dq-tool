@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "qualink"
-version = "0.0.2"
+version = "0.0.3"
 description = "Blazing fast data quality framework for Python, built on Apache DataFusion"
 readme = "README.md"
 license = "Apache-2.0"
@@ -20,6 +20,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
@@ -29,6 +30,7 @@ dependencies = [
     "datafusion>=51.0.0",
     "pyarrow>=15.0.0",
     "pyyaml>=6.0",
+    "rich>=13.0.0",
     "tabulate"
 ]
 
@@ -41,6 +43,17 @@ dev = [
     "pytest-asyncio>=0.23",
     "prek",
     "ty>=0.0.18",
+]
+adbc = [
+    "adbc_driver_manager",
+    "adbc_driver_sqlite",
+    "adbc_driver_postgresql",
+    "adbc_driver_flightsql",
+    "adbc_driver_snowflake",
+]
+secrets = [
+    "boto3",
+    "google-cloud-secret-manager",
 ]
 
 [tool.hatch.build.targets.wheel]

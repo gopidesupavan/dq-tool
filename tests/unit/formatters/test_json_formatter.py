@@ -1,5 +1,6 @@
 import json
 
+from qualink.core.constraint import ConstraintResult, ConstraintStatus
 from qualink.core.level import Level
 from qualink.core.result import (
     CheckStatus,
@@ -59,3 +60,80 @@ class TestJsonFormatter:
 
         data = json.loads(output)
         assert "issues" not in data
+
+    def test_format_includes_check_results_when_show_passed_enabled(self):
+        report = ValidationReport(
+            suite_name="Test",
+            check_results={
+                "quality": [
+                    ConstraintResult(status=ConstraintStatus.SUCCESS, constraint_name="con1", metric=1.0),
+                    ConstraintResult(
+                        status=ConstraintStatus.FAILURE,
+                        constraint_name="con2",
+                        message="below threshold",
+                        metric=0.5,
+                    ),
+                ]
+            },
+        )
+        result = ValidationResult(success=False, status=CheckStatus.ERROR, report=report)
+
+        formatter = JsonFormatter(FormatterConfig(show_passed=True))
+        output = formatter.format(result)
+
+        data = json.loads(output)
+        assert "check_results" in data
+        assert data["check_results"] == [
+            {
+                "check": "quality",
+                "constraints": [
+                    {
+                        "constraint": "con1",
+                        "status": "success",
+                        "message": "",
+                        "metric": 1.0,
+                    },
+                    {
+                        "constraint": "con2",
+                        "status": "failure",
+                        "message": "below threshold",
+                        "metric": 0.5,
+                    },
+                ],
+            }
+        ]
+
+    def test_format_omits_passing_check_results_by_default(self):
+        report = ValidationReport(
+            suite_name="Test",
+            check_results={
+                "quality": [
+                    ConstraintResult(status=ConstraintStatus.SUCCESS, constraint_name="con1", metric=1.0),
+                    ConstraintResult(
+                        status=ConstraintStatus.FAILURE,
+                        constraint_name="con2",
+                        message="below threshold",
+                        metric=0.5,
+                    ),
+                ]
+            },
+        )
+        result = ValidationResult(success=False, status=CheckStatus.ERROR, report=report)
+
+        formatter = JsonFormatter()
+        output = formatter.format(result)
+
+        data = json.loads(output)
+        assert data["check_results"] == [
+            {
+                "check": "quality",
+                "constraints": [
+                    {
+                        "constraint": "con2",
+                        "status": "failure",
+                        "message": "below threshold",
+                        "metric": 0.5,
+                    }
+                ],
+            }
+        ]

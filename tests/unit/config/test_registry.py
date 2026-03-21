@@ -10,7 +10,14 @@ class TestBuildConstraint:
         assert constraint.__class__.__name__ == "CompletenessConstraint"
 
     def test_build_uniqueness(self):
-        constraint = build_constraint("uniqueness", {"columns": ["col1", "col2"]})
+        constraint = build_constraint(
+            "uniqueness",
+            {"columns": ["col1", "col2"], "assertion": {"operator": "greater_than_or_equal", "value": 0.9}},
+        )
+        assert constraint.__class__.__name__ == "UniquenessConstraint"
+
+    def test_build_is_unique_defaults_to_equality(self):
+        constraint = build_constraint("is_unique", {"columns": ["col1"]})
         assert constraint.__class__.__name__ == "UniquenessConstraint"
 
     def test_build_distinctness(self):
@@ -71,3 +78,5 @@ class TestAvailableTypes:
         assert isinstance(types, list)
         assert "completeness" in types
         assert "size" in types
+        assert "has_entropy" not in types
+        assert "has_mutual_information" not in types

@@ -3,13 +3,16 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
+import pyarrow.fs as pafs
 import yaml
 
 from qualink.constraints.assertion import Assertion
 from qualink.core.logging_mixin import get_logger
 
 _logger = get_logger("config.parser")
+_SUPPORTED_FILESYSTEM_URI_SCHEMES = frozenset({"s3", "gs", "gcs", "az", "abfs", "abfss", "file"})
 
 _SHORTHAND_RE = re.compile(
     r"^\s*"
@@ -90,20 +93,48 @@ def _parse_dict(d: dict[str, Any]) -> Assertion:
 def load_yaml(source: str | Path) -> dict[str, Any]:
     """Load and return a YAML config as a Python dict.
 
-    *source* may be a file path or a raw YAML string.
+    *source* may be a local file path, a filesystem URI, or a raw YAML string.
     """
     if isinstance(source, Path):
         _logger.debug("Loading YAML from Path: %s", source)
-        return yaml.safe_load(source.read_text(encoding="utf-8"))
+        return _parse_yaml_text(source.read_text(encoding="utf-8"), str(source))
 
     text = str(source)
+    if _is_filesystem_uri(text):
+        _logger.debug("Loading YAML from filesystem URI: %s", text)
+        return _load_yaml_from_uri(text)
+
     if "\n" not in text and len(text) < 260:
         path = Path(text)
         try:
             if path.is_file():
                 _logger.debug("Loading YAML from file: %s", path)
-                return yaml.safe_load(path.read_text(encoding="utf-8"))
+                return _parse_yaml_text(path.read_text(encoding="utf-8"), str(path))
         except OSError:
             pass
+        if _looks_like_yaml_path(text):
+            raise FileNotFoundError(f"YAML config file not found: {text}")
     _logger.debug("Parsing YAML from string (%d chars)", len(text))
-    return yaml.safe_load(text)
+    return _parse_yaml_text(text, "<inline>")
+
+
+def _parse_yaml_text(text: str, source_label: str) -> dict[str, Any]:
+    data = yaml.safe_load(text)
+    if not isinstance(data, dict):
+        raise ValueError(f"YAML config from {source_label} must be a mapping at the top level.")
+    return data
+
+
+def _is_filesystem_uri(source: str) -> bool:
+    return urlparse(source).scheme.lower() in _SUPPORTED_FILESYSTEM_URI_SCHEMES
+
+
+def _looks_like_yaml_path(source: str) -> bool:
+    return Path(source).suffix.lower() in {".yaml", ".yml"}
+
+
+def _load_yaml_from_uri(source: str) -> dict[str, Any]:
+    filesystem, path = pafs.FileSystem.from_uri(source)
+    with filesystem.open_input_stream(path) as input_stream:
+        content = input_stream.read().decode("utf-8")
+    return _parse_yaml_text(content, source)

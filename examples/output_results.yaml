@@ -1,0 +1,25 @@
+suite:
+  name: "Filesystem Result Outputs"
+
+data_sources:
+  - name: users_source
+    format: csv
+    path: examples/users.csv
+    table_name: users
+
+checks:
+  - name: "Completeness"
+    level: error
+    rules:
+      - is_complete: user_id
+      - is_complete: email
+
+outputs:
+  - path: examples/results/users-validation.json
+    format: json
+    show_passed: true
+  - path: examples/results/users-validation.md
+    format: markdown
+    show_passed: true
+  - uri: s3://my-bucket/qualink/users-validation.json
+    format: json

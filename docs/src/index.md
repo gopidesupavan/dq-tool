@@ -117,25 +117,25 @@ asyncio.run(main())</code></pre>
 </section>
 
 <section style="max-width:800px;margin:0 auto 60px;padding:0 24px;">
-  <h2 style="text-align:center;color:var(--color-text);margin-bottom:8px;">🗺️ Upcoming Features</h2>
-  <p style="text-align:center;color:var(--color-text-secondary);margin-bottom:28px;">Here's what's on the roadmap.</p>
+  <h2 style="text-align:center;color:var(--color-text);margin-bottom:8px;">🧭 Available Now</h2>
+  <p style="text-align:center;color:var(--color-text-secondary);margin-bottom:28px;">Profile, persist, monitor, and bootstrap data quality workflows with features already available in qualink.</p>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
     <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
       <h4 style="margin:0 0 6px;color:var(--color-text);">📈 Analyzers</h4>
-      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Automatically profile your data — distributions, cardinality, null rates — before writing a single rule.</p>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Compute reusable dataset and column metrics before turning them into checks.</p>
     </div>
     <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
       <h4 style="margin:0 0 6px;color:var(--color-text);">🗄️ Metrics Repository</h4>
-      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Persist validation metrics over time to track data quality trends, regressions, and SLA compliance.</p>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Persist analyzer outputs over time to track quality trends, regressions, and baselines.</p>
     </div>
     <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
       <h4 style="margin:0 0 6px;color:var(--color-text);">🔍 Anomaly Detection</h4>
-      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Detect unexpected shifts in data distributions and metric values using statistical methods.</p>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Detect unexpected metric shifts using rate-of-change and z-score strategies.</p>
     </div>
     <div style="padding:20px;background:var(--color-bg-secondary,#161b22);border-radius:10px;border-left:3px solid var(--color-accent,#58a6ff);">
       <h4 style="margin:0 0 6px;color:var(--color-text);">💡 Intelligent Rule Suggestions</h4>
-      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Get automatic constraint recommendations based on data profiling — jump-start your validation suite.</p>
+      <p style="margin:0;font-size:0.85rem;color:var(--color-text-secondary);">Generate candidate Qualink rules from profiling results to bootstrap validation suites faster.</p>
     </div>
   </div>
 </section>

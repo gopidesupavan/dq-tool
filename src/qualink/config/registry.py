@@ -44,9 +44,13 @@ class ConstraintDef:
 _DEFS: list[ConstraintDef] = [
     # column + threshold
     ConstraintDef(
-        ("uniqueness", "is_unique", "has_uniqueness", "is_primary_key"),
-        Kind.COLUMNS_THRESHOLD,
+        ("uniqueness", "has_uniqueness", "is_unique", "is_primary_key"),
+        Kind.CUSTOM,
         "qualink.constraints.uniqueness:UniquenessConstraint",
+        custom_build=lambda cls, p: cls(
+            _cols(p),
+            _assert(p) if "assertion" in p else parse_assertion("== 1.0"),
+        ),
     ),
     # columns + assertion
     ConstraintDef(
@@ -64,11 +68,6 @@ _DEFS: list[ConstraintDef] = [
         ("completeness", "is_complete", "has_completeness"),
         Kind.COLUMN_ASSERTION,
         "qualink.constraints.completeness:CompletenessConstraint",
-    ),
-    ConstraintDef(
-        ("entropy", "has_entropy"),
-        Kind.COLUMN_ASSERTION,
-        "qualink.constraints.entropy:EntropyConstraint",
     ),
     ConstraintDef(
         ("min_length", "has_min_length"),
@@ -90,11 +89,6 @@ _DEFS: list[ConstraintDef] = [
         ("correlation", "has_correlation"),
         Kind.TWO_COLUMN_ASSERTION,
         "qualink.constraints.correlation:CorrelationConstraint",
-    ),
-    ConstraintDef(
-        ("mutual_information", "has_mutual_information"),
-        Kind.TWO_COLUMN_ASSERTION,
-        "qualink.constraints.mutual_information:MutualInformationConstraint",
     ),
     # assertion only
     ConstraintDef(

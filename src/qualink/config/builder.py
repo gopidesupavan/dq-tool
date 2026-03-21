@@ -10,6 +10,12 @@ from qualink.config.registry import build_constraint
 from qualink.core.level import Level
 from qualink.core.logging_mixin import get_logger
 from qualink.core.suite import ValidationSuite, ValidationSuiteBuilder
+from qualink.datasources import (
+    default_source_adapter_registry,
+    infer_source_kind,
+    normalize_connection_specs,
+    normalize_data_source_specs,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -76,14 +82,16 @@ def _build(cfg: dict[str, Any], ctx: SessionContext | None) -> ValidationSuiteBu
     suite_name = suite_cfg.get("name", "YAMLSuite")
     _logger.info("Building suite '%s' from YAML config", suite_name)
 
-    data_sources = cfg.get("data_sources", [cfg.get("data_source", {})])
-    primary_table = data_sources[0].get("table_name", "data") if data_sources else "data"
+    connection_specs = normalize_connection_specs(cfg)
+    data_source_specs = normalize_data_source_specs(cfg)
+    primary_table = data_source_specs[0].table_name if data_source_specs else "data"
 
     if ctx is None:
         ctx = SessionContext()
-        for ds in data_sources:
-            table_name = ds.get("table_name", "data")
-            _register_source(ctx, ds, table_name)
+    registry = default_source_adapter_registry()
+    for source in data_source_specs:
+        connection = connection_specs.get(source.connection) if source.connection else None
+        _register_source(ctx, source, connection, registry)
 
     builder = ValidationSuite.builder(suite_name).on_data(ctx, primary_table)
 
@@ -98,50 +106,19 @@ def _build(cfg: dict[str, Any], ctx: SessionContext | None) -> ValidationSuiteBu
     return builder
 
 
-def _register_source(ctx: SessionContext, ds: dict[str, Any], table_name: str) -> None:
-    from qualink.config.object_store import _resolve_format, build_url, is_object_store
-
-    if is_object_store(ds):
-        _logger.debug("Detected object-store data source for table '%s'", table_name)
-
-        from qualink.config.object_store import register_object_store
-
-        register_object_store(ctx, ds)
-        url = build_url(ds)
-        fmt = _resolve_format(ds)
-        _register_table_by_format(ctx, table_name, url, fmt)
-        return
-
-    # ── Local file data sources ──
-    src_type = ds.get("type", "").lower()
-    path = ds.get("path", "")
-    if not path and src_type not in ("memory", ""):
-        _logger.error("data_source requires a 'path' when type is %s", src_type)
-        raise ValueError("data_source requires a 'path' when type is csv/parquet/json")
-
-    _logger.debug("Registering local data source: type=%s, path='%s', table='%s'", src_type, path, table_name)
-    _register_table_by_format(ctx, table_name, path, src_type)
-
-
-def _register_table_by_format(ctx: SessionContext, table_name: str, path_or_url: str, fmt: str) -> None:
-    """Register a table with DataFusion using the appropriate format-specific method.
-
-    Args:
-        ctx: DataFusion SessionContext
-        table_name: Name for the registered table
-        path_or_url: Local file path or S3 URL
-        fmt: File format ('csv', 'parquet', 'json')
-    """
-    _logger.debug("Registering table '%s' from %s (%s format)", table_name, path_or_url, fmt)
-
-    if fmt == "csv":
-        ctx.register_csv(table_name, path_or_url)
-    elif fmt == "parquet":
-        ctx.register_parquet(table_name, path_or_url)
-    elif fmt == "json":
-        ctx.register_json(table_name, path_or_url)
-    else:
-        raise ValueError(f"Unsupported file format '{fmt}' for data source. Use csv, parquet, or json.")
+def _register_source(
+    ctx: SessionContext,
+    source: Any,
+    connection: Any,
+    registry: Any,
+) -> None:
+    _logger.debug(
+        "Preparing data source: kind=%s, table='%s', connection=%s",
+        infer_source_kind(source, connection),
+        source.table_name,
+        connection.name if connection is not None else None,
+    )
+    registry.prepare(ctx, source, connection)
 
 
 def _build_check(check_cfg: dict[str, Any]) -> Check:

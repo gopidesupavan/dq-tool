@@ -182,6 +182,14 @@ class TestChecksIntegration:
         assert result.status == CheckStatus.SUCCESS
 
     @pytest.mark.asyncio()
+    async def test_has_uniqueness_respects_non_default_assertions(self, df_ctx):
+        check = Check.builder("uniqueness_lt").has_uniqueness(["city"], Assertion.less_than(0.7)).build()
+        result = await check.run(df_ctx, "users")
+
+        assert result.status == CheckStatus.SUCCESS
+        assert result.constraint_results[0].metric == 0.6
+
+    @pytest.mark.asyncio()
     async def test_has_distinctness(self, df_ctx):
         check = Check.builder("distinct_check").has_distinctness(["id"], Assertion.equal_to(1.0)).build()
         result = await check.run(df_ctx, "users")

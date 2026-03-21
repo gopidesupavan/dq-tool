@@ -81,10 +81,12 @@ suite:
   name: "Cross-Table Validation"
 
 data_sources:
-  - type: csv
+  - name: users_source
+    format: csv
     path: "users.csv"
     table_name: users
-  - type: csv
+  - name: orders_source
+    format: csv
     path: "orders.csv"
     table_name: orders
 

@@ -2,13 +2,19 @@ suite:
   name: "Qualink Tool (Quality Linking) – Every Built-In Rule"
 
 data_sources:
-  - type: csv
+  - name: showcase_source
+    format: csv
     path: "examples/showcase_data.csv"
     table_name: showcase
-  - type: csv
+  - name: users_source
+    format: csv
     path: "examples/users.csv"
     table_name: users
 
+outputs:
+  - uri: examples/results/showcase_all_rules.json
+    format: json
+    show_passed: true
 checks:
 
   - name: "Schema & Structure"
@@ -73,7 +79,7 @@ checks:
           gte: 0.2
 
   - name: "Numeric Statistics"
-    level: warning
+    level: error
     description: "Min, max, mean, sum, stddev with all bound types"
     rules:
       # has_min – gte bound (minimum of column >= value)
@@ -91,7 +97,7 @@ checks:
       # has_sum – eq bound (exact sum)
       - has_sum:
           column: age
-          eq: 425
+          eq: 42500000
       # has_stddev – standard deviation within a range
       - has_stddev:
           column: age

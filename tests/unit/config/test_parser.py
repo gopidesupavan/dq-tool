@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from qualink.config.parser import load_yaml, parse_assertion
 from qualink.constraints.assertion import Assertion
@@ -57,7 +59,6 @@ class TestLoadYaml:
 suite:
   name: Test Suite
 data_source:
-  type: csv
   path: data.csv
 checks:
   - name: Test Check
@@ -77,8 +78,36 @@ suite:
         data = load_yaml(yaml_string)
         assert data["suite"]["name"] == "Test Suite"
 
-    def test_load_yaml_from_short_string_path(self, tmp_path):
+    def test_load_yaml_from_short_string_path(self, tmp_path, monkeypatch):
         yaml_file = tmp_path / "test.yaml"
         yaml_file.write_text("suite:\n  name: Test")
-        load_yaml("test.yaml")  # Assuming cwd is tmp_path, but may not work
-        # Skip this test as it's tricky without setting cwd
+        monkeypatch.chdir(tmp_path)
+
+        data = load_yaml("test.yaml")
+
+        assert data["suite"]["name"] == "Test"
+
+    def test_load_yaml_from_file_uri(self, tmp_path):
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text("suite:\n  name: File URI Test")
+
+        data = load_yaml(yaml_file.resolve().as_uri())
+
+        assert data["suite"]["name"] == "File URI Test"
+
+    def test_load_yaml_from_object_store_uri(self):
+        mock_filesystem = MagicMock()
+        mock_stream = MagicMock()
+        mock_stream.read.return_value = b"suite:\n  name: Object Store Test\n"
+        mock_filesystem.open_input_stream.return_value.__enter__.return_value = mock_stream
+
+        with patch("qualink.config.parser.pafs") as mock_pafs:
+            mock_pafs.FileSystem.from_uri.return_value = (mock_filesystem, "cfg.yaml")
+            data = load_yaml("s3://bucket/config.yaml")
+
+        assert data["suite"]["name"] == "Object Store Test"
+        mock_filesystem.open_input_stream.assert_called_once_with("cfg.yaml")
+
+    def test_load_yaml_missing_yaml_path_raises(self):
+        with pytest.raises(FileNotFoundError, match="YAML config file not found"):
+            load_yaml("missing.yaml")

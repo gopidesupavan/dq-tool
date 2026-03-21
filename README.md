@@ -13,6 +13,10 @@ Blazing fast data quality framework for Python, built on Apache DataFusion.
 - **Cloud Object Stores**: Read data directly from Amazon S3 (and S3-compatible services).
 - **Multiple Output Formats**: Results can be formatted as human-readable text, JSON, or Markdown.
 - **Async Support**: Built with asyncio for non-blocking operations.
+- **Analyzers**: Compute reusable dataset and column metrics independent of pass/fail checks.
+- **Metrics Repository**: Persist analyzer outputs over time using tagged result keys.
+- **Anomaly Detection**: Detect unexpected metric shifts from historical baselines.
+- **Intelligent Rule Suggestions**: Generate candidate validation rules from column profiles.
 - **Easy Integration**: Simple API for defining and running validation suites.
 
 ## Installation
@@ -75,10 +79,11 @@ You can also define validation suites using YAML files for a declarative approac
 suite:
   name: "User Data Quality"
 
-data_source:
-  type: csv
-  path: "examples/users.csv"
-  table_name: users
+data_sources:
+  - name: users_source
+    format: csv
+    path: "examples/users.csv"
+    table_name: users
 
 checks:
   - name: "Critical Checks"
@@ -113,6 +118,9 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+`run_yaml()` also accepts filesystem URIs such as `s3://my-bucket/checks.yaml` or
+`file:///absolute/path/to/checks.yaml`, in addition to local file paths and inline YAML strings.
+
 ## CLI – `qualinkctl`
 
 The simplest way to run a YAML validation is with `qualinkctl`:
@@ -127,6 +135,9 @@ uv run qualinkctl checks.yaml -f json
 # Markdown report saved to file
 uv run qualinkctl checks.yaml -f markdown -o report.md
 
+# JSON report written to object storage
+uv run qualinkctl checks.yaml -f json -o s3://my-bucket/qualink/results.json
+
 # Show all constraints (including passed) with debug logging
 uv run qualinkctl checks.yaml --show-passed -v
 ```
@@ -139,6 +150,122 @@ uv run qualinkctl checks.yaml -f json -o results.json || echo "Validation failed
 
 Run `uv run qualinkctl --help` for a full list of options.
 
+## Advanced Features
+
+Runnable end-to-end examples are available in:
+
+- `examples/adbc_sqlite_example.py`
+- `examples/analyzers_example.py`
+- `examples/metrics_repository_example.py`
+- `examples/anomaly_detection_example.py`
+- `examples/intelligent_rule_suggestions_example.py`
+- `examples/output_results_example.py`
+- `examples/file_uri_validation.py`
+
+### ADBC Datasources
+
+qualink can also register database-backed sources through ADBC and materialize them into DataFusion tables before running checks.
+
+SQLite example shape:
+
+```yaml
+connections:
+  sqlite_local:
+    uri: sqlite:///tmp/users.db
+
+data_sources:
+  - name: users_source
+    connection: sqlite_local
+    table: users
+    table_name: users
+```
+
+To run the SQLite example after installing the optional ADBC packages:
+
+```bash
+uv sync --group adbc
+uv run python examples/adbc_sqlite_example.py
+```
+
+### Secret-backed Connections
+
+Sensitive connection values can be resolved inline from environment variables, AWS Systems Manager Parameter Store, AWS Secrets Manager, or GCP Secret Manager.
+
+Example:
+
+```yaml
+connections:
+  sqlite_local:
+    uri:
+      from: env
+      key: QUALINK_SQLITE_URI
+
+data_sources:
+  - name: users_source
+    connection: sqlite_local
+    table: users
+    table_name: users
+```
+
+AWS SSM example:
+
+```yaml
+connections:
+  postgres_prod:
+    uri:
+      from: aws_ssm
+      key: /qualink/prod/postgres/uri
+      region: us-east-1
+```
+
+AWS Secrets Manager JSON field extraction:
+
+```yaml
+connections:
+  snowflake_prod:
+    uri:
+      from: aws_secretsmanager
+      key: qualink/prod/snowflake
+      field: uri
+      region: eu-west-1
+```
+
+The checked-in reference config is [examples/secret_backed_connections.yaml](/Users/gopidesupavan/qualink/examples/secret_backed_connections.yaml).
+
+### Result Outputs to Filesystems
+
+Validation results can be written to local paths or filesystem URIs backed by PyArrow filesystems such as S3, GCS, and Azure Blob/Data Lake.
+
+CLI example:
+
+```bash
+uv run qualinkctl checks.yaml -f json -o s3://my-bucket/qualink/results.json
+uv run qualinkctl checks.yaml -f markdown -o gs://my-bucket/qualink/report.md
+```
+
+YAML-driven outputs:
+
+```yaml
+outputs:
+  - path: reports/results.json
+    format: json
+    show_passed: true
+  - uri: s3://my-bucket/qualink/results.md
+    format: markdown
+```
+
+Python API example:
+
+```python
+from qualink.config import run_yaml
+from qualink.config.parser import load_yaml
+from qualink.output import OutputService, normalize_output_specs
+
+config = load_yaml("examples/output_results.yaml")
+result = await run_yaml("examples/output_results.yaml")
+OutputService().emit_many(result, normalize_output_specs(config))
+```
+
 ### S3 Object Store Sources
 
 qualink can read data directly from Amazon S3 using DataFusion's built-in `AmazonS3`:
@@ -148,11 +275,9 @@ suite:
   name: "Cloud Data Quality"
 
 data_sources:
-  - store: s3
-    bucket: my-data-lake
-    region: us-east-1
+  - name: users_source
     format: parquet
-    path: data/users.parquet
+    path: s3://my-data-lake/data/users.parquet
     table_name: users
 
 checks:
@@ -163,7 +288,7 @@ checks:
       - is_unique: email
 ```
 
-Credentials are read from the YAML or fall back to standard environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.).
+Use the standard AWS credential chain. On Glue, ECS, EKS, or EC2 with an attached role, explicit keys are usually not required.
 
 ## Constraints
 

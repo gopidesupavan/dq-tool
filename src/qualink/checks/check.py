@@ -139,21 +139,23 @@ class CheckBuilder(LoggingMixin):
         return self
 
     def is_unique(self, *columns: str, hint: str = "") -> CheckBuilder:
+        from qualink.constraints.assertion import Assertion
         from qualink.constraints.uniqueness import UniquenessConstraint
 
-        self._constraints.append(UniquenessConstraint(list(columns), threshold=1.0))
+        self._constraints.append(UniquenessConstraint(list(columns), Assertion.equal_to(1.0)))
         return self
 
     def is_primary_key(self, *columns: str, hint: str = "") -> CheckBuilder:
+        from qualink.constraints.assertion import Assertion
         from qualink.constraints.uniqueness import UniquenessConstraint
 
-        self._constraints.append(UniquenessConstraint(list(columns), threshold=1.0))
+        self._constraints.append(UniquenessConstraint(list(columns), Assertion.equal_to(1.0)))
         return self
 
     def has_uniqueness(self, columns: list[str], assertion: Assertion, *, hint: str = "") -> CheckBuilder:
         from qualink.constraints.uniqueness import UniquenessConstraint
 
-        self._constraints.append(UniquenessConstraint(columns, threshold=assertion._value))
+        self._constraints.append(UniquenessConstraint(columns, assertion))
         return self
 
     def has_distinctness(self, columns: list[str], assertion: Assertion, *, hint: str = "") -> CheckBuilder:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
@@ -40,7 +40,7 @@ class TestCLIMissingFile:
     def test_missing_config_file(self):
         result = runner.invoke(main, ["nonexistent.yaml"])
         assert result.exit_code != 0
-        assert "does not exist" in result.output.lower() or "error" in result.output.lower()
+        assert "unable to load config" in result.output.lower()
 
 
 class TestCLIFormatOptions:
@@ -157,6 +157,108 @@ class TestCLIMainFunction:
         assert out_file.exists()
         content = out_file.read_text()
         assert "test" in content
+
+    def test_main_output_to_remote_uri(self, tmp_path):
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text("suite:\n  name: test\n")
+
+        from qualink.core.result import (
+            CheckStatus,
+            ValidationMetrics,
+            ValidationReport,
+            ValidationResult,
+        )
+
+        fake_result = ValidationResult(
+            success=True,
+            status=CheckStatus.SUCCESS,
+            report=ValidationReport(
+                suite_name="test",
+                metrics=ValidationMetrics(total_checks=1, total_constraints=1, passed=1),
+            ),
+        )
+
+        with (
+            patch("qualink.cli.run_yaml", new_callable=AsyncMock, return_value=fake_result),
+            patch("qualink.cli.write_text_output") as mock_write_output,
+        ):
+            result = runner.invoke(
+                main,
+                [str(yaml_file), "-f", "json", "-o", "s3://bucket/reports/result.json"],
+                catch_exceptions=False,
+            )
+
+        assert result.exit_code == 0
+        mock_write_output.assert_called_once()
+        assert mock_write_output.call_args[0][0] == "s3://bucket/reports/result.json"
+
+    def test_main_accepts_remote_config_uri(self):
+        from qualink.core.result import (
+            CheckStatus,
+            ValidationMetrics,
+            ValidationReport,
+            ValidationResult,
+        )
+
+        fake_result = ValidationResult(
+            success=True,
+            status=CheckStatus.SUCCESS,
+            report=ValidationReport(
+                suite_name="remote-test",
+                metrics=ValidationMetrics(total_checks=1, total_constraints=1, passed=1),
+            ),
+        )
+
+        with (
+            patch("qualink.cli.load_yaml", return_value={"suite": {"name": "remote-test"}}) as mock_load_yaml,
+            patch("qualink.cli.run_yaml", new_callable=AsyncMock, return_value=fake_result) as mock_run_yaml,
+        ):
+            result = runner.invoke(main, ["s3://bucket/checks.yaml"], catch_exceptions=False)
+
+        assert result.exit_code == 0
+        mock_load_yaml.assert_called_once_with("s3://bucket/checks.yaml")
+        mock_run_yaml.assert_awaited_once_with("s3://bucket/checks.yaml")
+
+    def test_main_emits_configured_outputs_from_yaml(self, tmp_path):
+        yaml_file = tmp_path / "test.yaml"
+        yaml_file.write_text(
+            """
+suite:
+  name: test
+output:
+  path: s3://bucket/reports/result.json
+  format: json
+"""
+        )
+
+        from qualink.core.result import (
+            CheckStatus,
+            ValidationMetrics,
+            ValidationReport,
+            ValidationResult,
+        )
+
+        fake_result = ValidationResult(
+            success=True,
+            status=CheckStatus.SUCCESS,
+            report=ValidationReport(
+                suite_name="test",
+                metrics=ValidationMetrics(total_checks=1, total_constraints=1, passed=1),
+            ),
+        )
+        mock_output_service = MagicMock()
+
+        with (
+            patch("qualink.cli.run_yaml", new_callable=AsyncMock, return_value=fake_result),
+            patch("qualink.cli.OutputService", return_value=mock_output_service),
+        ):
+            result = runner.invoke(main, [str(yaml_file), "-f", "json"], catch_exceptions=False)
+
+        assert result.exit_code == 0
+        mock_output_service.emit_many.assert_called_once()
+        specs = mock_output_service.emit_many.call_args[0][1]
+        assert len(specs) == 1
+        assert specs[0].destination == "s3://bucket/reports/result.json"
 
     def test_verbose_flag(self, tmp_path):
         yaml_file = tmp_path / "test.yaml"

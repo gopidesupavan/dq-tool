@@ -16,7 +16,7 @@ Formatters convert a `ValidationResult` into a human-readable or machine-readabl
 
 ## HumanFormatter
 
-Produces colorized terminal output with pass/fail icons.
+Produces a `rich`-rendered terminal report with panels, tables, colors, and grouped sections.
 
 ```python
 from qualink.formatters import HumanFormatter
@@ -28,17 +28,25 @@ print(formatter.format(result))
 **Output:**
 
 ```
-Verification PASSED: User Data Quality
+╭──────────────────────────────────────────── qualink ────────────────────────────────────────────╮
+│ User Data Quality                                                                              │
+│ Validation result: FAIL                                                                        │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────╯
 
-  Checks: 2  |  Constraints: 7
-  Passed: 6  |  Failed: 1  |  Skipped: 0
-  Pass rate: 85.7%
+Summary
+Checks          2
+Constraints     7
+Passed          6
+Failed          1
+Skipped         0
+Pass rate       85.7%
 
-  [PASS] [Critical Checks] Completeness(user_id)
-  [FAIL] [Critical Checks] Uniqueness(email): ...
-
-Issues:
-  ERROR Critical Checks / Uniqueness(email): ...
+Checks
+┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Check            ┃ Status ┃ Constraint           ┃ Message                  ┃ Metric ┃
+┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Critical Checks  │ FAIL   │ Uniqueness(email)    │ ...                      │ 0.9000 │
+└──────────────────┴────────┴──────────────────────┴──────────────────────────┴────────┘
 ```
 
 ## JsonFormatter
@@ -138,7 +146,7 @@ print(formatter.format(result))
 | `show_metrics` | `True` | Show aggregate pass/fail metrics |
 | `show_issues` | `True` | Show detailed issue messages |
 | `show_passed` | `False` | Show passing constraints (not just failures) |
-| `colorize` | `True` | Enable ANSI color codes |
+| `colorize` | `True` | Enable ANSI colors/styles in the `rich` terminal output |
 
 ## Custom Formatters
 

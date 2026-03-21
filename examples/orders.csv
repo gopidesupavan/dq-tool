@@ -1,0 +1,16 @@
+order_id,user_id,provider,service,order_amount,order_date,status
+1001,1,AWS,Cloud Hosting,120.50,2026-01-15,Completed
+1002,2,Google Cloud,Storage,75.00,2026-01-18,Completed
+1003,3,Azure,Virtual Machine,210.99,2026-01-20,Pending
+1004,4,AWS,Database Service,89.40,2026-01-25,Completed
+1005,5,DigitalOcean,Droplet,45.00,2026-02-01,Cancelled
+1006,6,AWS,Cloud Hosting,300.00,2026-02-05,Completed
+1007,7,Google Cloud,BigQuery,150.75,2026-02-08,Pending
+1008,8,Azure,App Service,60.00,2026-02-10,Completed
+1009,9,AWS,S3 Storage,25.99,2026-02-12,Completed
+1010,10,DigitalOcean,Kubernetes,180.00,2026-02-15,Processing
+1011,1,Azure,SQL Database,95.00,2026-02-18,Completed
+1012,3,AWS,EC2 Instance,130.00,2026-02-20,Completed
+1013,5,Google Cloud,Compute Engine,220.00,2026-02-22,Completed
+1014,9,DigitalOcean,Load Balancer,35.50,2026-02-25,Pending
+1015,2,AWS,Lambda,40.00,2026-02-28,Completed

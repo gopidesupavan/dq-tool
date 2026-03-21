@@ -1,0 +1,21 @@
+suite:
+  name: "SQLite ADBC Example"
+
+connections:
+  sqlite_local:
+    uri: sqlite:///tmp/users.db
+
+data_sources:
+  - name: users_source
+    connection: sqlite_local
+    table: users
+    table_name: users
+
+checks:
+  - name: "User Checks"
+    level: error
+    rules:
+      - has_size:
+          eq: 3
+      - is_complete: email
+      - is_unique: user_id

@@ -15,10 +15,11 @@ qualink supports a fully declarative YAML format so you can define your entire v
 suite:
   name: "My Validation Suite"
 
-data_source:
-  type: csv
-  path: "data/users.csv"
-  table_name: users
+data_sources:
+  - name: users_source
+    format: csv
+    path: "data/users.csv"
+    table_name: users
 
 checks:
   - name: "Check Name"
@@ -26,6 +27,12 @@ checks:
     description: "Optional description"
     rules:
       - constraint_type: column_name_or_config
+
+outputs:
+  - path: "reports/results.json"
+    format: json
+  - uri: "s3://my-bucket/qualink/results.md"
+    format: markdown
 ```
 
 ## Data Sources
@@ -33,44 +40,140 @@ checks:
 ### Single Source
 
 ```yaml
-data_source:
-  type: csv
-  path: "data/users.csv"
-  table_name: users
+data_sources:
+  - name: users_source
+    format: csv
+    path: "data/users.csv"
+    table_name: users
 ```
 
 ### Multiple Sources (for cross-table checks)
 
 ```yaml
 data_sources:
-  - type: csv
+  - name: orders_source
+    format: csv
     path: "data/orders.csv"
     table_name: orders
-  - type: csv
+  - name: users_source
+    format: csv
     path: "data/users.csv"
     table_name: users
 ```
 
 Supported source types: `csv`, `parquet`, `json`.
 
-### Object Store Sources (S3)
+### ADBC Sources
 
-qualink supports reading data directly from Amazon S3 using DataFusion's built-in `AmazonS3` — no extra dependencies needed.
+For database-backed sources, use a named connection with a URI and define either `table` or `query` on the datasource. Qualink reads the result through ADBC, registers it as a DataFusion table, and runs the normal checks on that registered table.
 
-All credentials and connection settings are read exclusively from **environment variables**. The YAML config only supplies `bucket`, `path`, `format`, and `table_name`.
+```yaml
+connections:
+  sqlite_local:
+    uri: sqlite:///tmp/users.db
+
+data_sources:
+  - name: users_source
+    connection: sqlite_local
+    table: users
+    table_name: users
+```
+
+```yaml
+connections:
+  sqlite_local:
+    uri: sqlite:///tmp/users.db
+
+data_sources:
+  - name: users_source
+    connection: sqlite_local
+    query: |
+      SELECT user_id, email, age
+      FROM users
+    table_name: users
+```
+
+### Secret-backed Connections
+
+Connection values can be resolved inline from supported secret systems instead of storing them directly in YAML. The supported inline sources are:
+
+- `env`
+- `aws_ssm`
+- `aws_secretsmanager`
+- `gcp_secret_manager`
+
+The general shape is:
+
+```yaml
+connections:
+  warehouse:
+    uri:
+      from: aws_ssm
+      key: /qualink/prod/postgres/uri
+      region: us-east-1
+```
+
+Environment variable example:
+
+```yaml
+connections:
+  sqlite_local:
+    uri:
+      from: env
+      key: QUALINK_SQLITE_URI
+```
+
+AWS Secrets Manager with JSON field extraction:
+
+```yaml
+connections:
+  snowflake_prod:
+    uri:
+      from: aws_secretsmanager
+      key: qualink/prod/snowflake
+      field: uri
+      region: eu-west-1
+```
+
+GCP Secret Manager example:
+
+```yaml
+connections:
+  bigquery_prod:
+    uri:
+      from: gcp_secret_manager
+      key: qualink-bigquery-uri
+      project_id: my-project
+```
+
+Optional secret-backed values can be omitted by setting `required: false`:
+
+```yaml
+connections:
+  lake:
+    endpoint:
+      from: env
+      key: AWS_ENDPOINT_URL
+      required: false
+```
+
+Inline secret refs are only resolved inside `connections`. They work for ADBC `uri` values and for object-store connection options such as `endpoint`, `service_account_path`, or `region`.
+
+### Object Store Sources
+
+qualink supports reading data directly from object stores using DataFusion-native adapters. The object store provider is inferred from the URI scheme in `path`.
 
 #### Amazon S3
 
 ```yaml
-data_source:
-  store: s3
-  bucket: my-data-bucket
-  format: parquet
-  path: data/users.parquet
-  table_name: users
+data_sources:
+  - name: users_source
+    format: parquet
+    path: s3://my-data-bucket/data/users.parquet
+    table_name: users
 ```
 
-Set your credentials via environment variables before running:
+Set credentials via the standard AWS provider chain before running if you are not using an attached role:
 
 ```bash
 export AWS_DEFAULT_REGION=us-east-1
@@ -89,30 +192,27 @@ export AWS_SECRET_ACCESS_KEY=wJalr...
 | `AWS_ENDPOINT_URL` | Custom endpoint for MinIO, R2, etc. |
 | `AWS_ALLOW_HTTP` | Set to `true` to allow plain HTTP endpoints |
 
-#### S3 YAML Configuration Reference
+#### Object Store YAML Configuration Reference
 
 | Field | Description | Required |
 |-------|-------------|----------|
-| `store` | Must be `s3` | Yes |
-| `bucket` | S3 bucket name | Yes |
-| `path` | Object key / prefix within the bucket | No |
-| `format` | File format: `csv`, `parquet`, `json` (auto-detected from extension if omitted) | No |
-| `table_name` | DataFusion table name | Yes |
+| `data_sources[].path` | Full object-store URI such as `s3://bucket/key` | Yes |
+| `data_sources[].format` | `csv`, `parquet`, `json` (auto-detected if omitted) | No |
+| `data_sources[].table_name` | DataFusion table name | Yes |
+| `data_sources[].connection` | Optional named connection for extra settings such as region or endpoint | No |
 
-> **Security:** Credentials are never stored in YAML files. Always use environment variables to configure AWS credentials and connection settings.
+> **Security:** Prefer inline secret refs for sensitive connection values and keep only non-secret settings such as region or endpoint as plain YAML values.
 
 #### Multiple S3 Sources
 
 ```yaml
 data_sources:
-  - store: s3
-    bucket: data-lake
-    path: orders/2024/
+  - name: orders_source
+    path: s3://data-lake/orders/2024/
     format: parquet
     table_name: orders
-  - store: s3
-    bucket: data-lake
-    path: users.csv
+  - name: users_source
+    path: s3://data-lake/users.csv
     format: csv
     table_name: users
 ```
@@ -121,17 +221,56 @@ You can also mix local and S3 sources:
 
 ```yaml
 data_sources:
-  - store: s3
-    bucket: data-lake
-    path: production/orders.parquet
+  - name: orders_source
+    path: s3://data-lake/production/orders.parquet
     format: parquet
     table_name: orders
-  - type: csv
+  - name: users_source
+    format: csv
     path: local/users.csv
     table_name: users
 ```
 
 ## Assertion Syntax
+
+## Result Outputs
+
+Use `output` for a single destination or `outputs` for multiple destinations. Each entry currently uses the filesystem writer and can target a local path or a supported filesystem URI.
+
+```yaml
+output:
+  path: reports/results.json
+  format: json
+  show_passed: true
+```
+
+```yaml
+outputs:
+  - path: reports/results.json
+    format: json
+    show_passed: true
+  - uri: s3://my-bucket/qualink/results.md
+    format: markdown
+  - uri: abfss://container@account.dfs.core.windows.net/qualink/results.json
+    format: json
+```
+
+### Output Fields
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| `output.path` / `outputs[].path` | Local filesystem destination | No |
+| `output.uri` / `outputs[].uri` | Remote filesystem URI | No |
+| `output.destination` / `outputs[].destination` | Generic destination alias | No |
+| `output.format` / `outputs[].format` | `human`, `json`, or `markdown` | No |
+| `output.show_passed` / `outputs[].show_passed` | Include passed constraints | No |
+| `output.show_metrics` / `outputs[].show_metrics` | Include aggregate metrics | No |
+| `output.show_issues` / `outputs[].show_issues` | Include issues section | No |
+| `output.colorize` / `outputs[].colorize` | Enable ANSI colors for human output | No |
+
+At least one of `path`, `uri`, or `destination` is required for every output entry.
+
+Supported remote URI schemes currently include `s3://`, `gs://`, `gcs://`, `az://`, `abfs://`, and `abfss://`.
 
 ### Inline Bound Keys (recommended)
 
@@ -328,6 +467,7 @@ The simplest way to run a YAML config is with the `qualinkctl` CLI:
 qualinkctl checks.yaml
 qualinkctl checks.yaml -f json
 qualinkctl checks.yaml -f markdown -o report.md
+qualinkctl s3://my-bucket/qualink/checks.yaml -f json
 ```
 
 See the [CLI guide](../cli/) for all options and CI/CD integration examples.
@@ -339,6 +479,9 @@ from qualink.config import run_yaml
 
 result = await run_yaml("checks.yaml")
 ```
+
+The config source can be a local file path, a filesystem URI such as
+`s3://my-bucket/qualink/checks.yaml` or `file:///tmp/checks.yaml`, or an inline YAML string.
 
 ### With Custom Context
 

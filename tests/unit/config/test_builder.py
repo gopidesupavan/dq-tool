@@ -19,7 +19,6 @@ class TestBuildSuiteFromYaml:
 suite:
   name: Test Suite
 data_source:
-  type: csv
   path: test.csv
 checks:
   - name: Test Check
@@ -30,13 +29,46 @@ checks:
         with patch("qualink.config.builder.load_yaml") as mock_load:
             mock_load.return_value = {
                 "suite": {"name": "Test Suite"},
-                "data_source": {"type": "csv", "path": "test.csv"},
+                "data_source": {"path": "test.csv"},
                 "checks": [{"name": "Test Check", "level": "error", "rules": [{"is_complete": "id"}]}],
             }
             builder = build_suite_from_yaml(yaml_content, None)  # Pass None to trigger registration
             assert builder is not None
             # Check that register_csv was called
-            mock_ctx.register_csv.assert_called_with("data", "test.csv")
+            mock_ctx.register_csv.assert_called_with("source_0", "test.csv")
+
+    @patch("qualink.config.builder.SessionContext")
+    def test_build_suite_from_yaml_with_named_object_store_connection(self, mock_ctx_class):
+        mock_ctx = MagicMock(spec=SessionContext)
+        mock_ctx_class.return_value = mock_ctx
+
+        with patch("datafusion.object_store.AmazonS3") as mock_s3:
+            mock_s3.return_value = MagicMock()
+            builder = build_suite_from_yaml(
+                """
+suite:
+  name: Remote Suite
+connections:
+  lake:
+    region: us-east-1
+data_sources:
+  - name: remote_users
+    connection: lake
+    format: parquet
+    path: s3://demo-bucket/users/data.parquet
+    table_name: users
+checks:
+  - name: Test Check
+    level: error
+    rules:
+      - is_complete: id
+""",
+                None,
+            )
+
+            assert builder is not None
+            mock_ctx.register_object_store.assert_called_once()
+            mock_ctx.register_parquet.assert_called_once_with("users", "s3://demo-bucket/users/data.parquet")
 
 
 class TestRunYaml:

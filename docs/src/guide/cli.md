@@ -37,10 +37,11 @@ Given a YAML validation config (e.g. `checks.yaml`):
 suite:
   name: "User Data Quality"
 
-data_source:
-  type: csv
-  path: "users.csv"
-  table_name: users
+data_sources:
+  - name: users_source
+    format: csv
+    path: "users.csv"
+    table_name: users
 
 checks:
   - name: "Completeness"
@@ -84,7 +85,7 @@ qualinkctl [OPTIONS] CONFIG
 | Option | Short | Default | Description |
 |--------|-------|---------|-------------|
 | `--format` | `-f` | `human` | Output format: `human`, `json`, or `markdown`. |
-| `--output` | `-o` | *(stdout)* | Write output to a file instead of stdout. |
+| `--output` | `-o` | *(stdout)* | Write output to a local path or filesystem URI instead of stdout. |
 | `--show-passed` | | `false` | Include passing constraints in the output. |
 | `--show-metrics / --no-metrics` | | `true` | Include aggregate metrics in the output. |
 | `--no-color` | | `false` | Disable ANSI color codes in the output. |
@@ -147,7 +148,26 @@ Use `--output` / `-o` to write results to a file:
 ```bash
 qualinkctl checks.yaml -f json -o results.json
 qualinkctl checks.yaml -f markdown -o report.md
+qualinkctl checks.yaml -f json -o s3://my-bucket/qualink/results.json
+qualinkctl checks.yaml -f markdown -o gs://my-bucket/qualink/report.md
 ```
+
+Supported filesystem URI schemes currently include `s3://`, `gs://`, `gcs://`, `az://`, `abfs://`, and `abfss://`. These are handled through PyArrow filesystem backends.
+
+## YAML-Configured Outputs
+
+You can also define one or more output destinations directly in the YAML:
+
+```yaml
+outputs:
+  - path: reports/results.json
+    format: json
+    show_passed: true
+  - uri: s3://my-bucket/qualink/results.md
+    format: markdown
+```
+
+When you run `qualinkctl checks.yaml`, the CLI still prints its normal stdout output and also writes each configured output destination. If you additionally pass `--output`, that explicit CLI destination is written as well.
 
 ## Exit Codes
 
@@ -183,6 +203,7 @@ qualinkctl checks.yaml -f json
 
 ```bash
 qualinkctl checks.yaml -f markdown -o report.md
+qualinkctl checks.yaml -f json -o s3://my-bucket/qualink/results.json
 ```
 
 ### Show all constraints (including passed)

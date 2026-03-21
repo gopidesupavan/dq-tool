@@ -14,10 +14,12 @@ suite:
   name: "DQ Tool – Every Built-In Rule (Including Comparisons)"
 
 data_sources:
-  - type: csv
+  - name: showcase_source
+    format: csv
     path: "examples/showcase_data.csv"
     table_name: showcase
-  - type: csv
+  - name: users_source
+    format: csv
     path: "examples/users.csv"
     table_name: users
 
@@ -163,6 +165,9 @@ if __name__ == "__main__":
 
 That's it — just 2 lines of real code! The YAML file defines everything.
 
+You can also load the config itself from a filesystem URI, for example
+`file:///.../showcase_all_rules.yaml` locally or `s3://my-bucket/qualink/checks.yaml` in Glue.
+
 ## Assertion Syntax Variants
 
 The YAML config supports three ways to define assertions:
@@ -199,10 +204,12 @@ For cross-table checks, define multiple sources:
 
 ```yaml
 data_sources:
-  - type: csv
+  - name: orders_source
+    format: csv
     path: "orders.csv"
     table_name: orders
-  - type: csv
+  - name: users_source
+    format: csv
     path: "users.csv"
     table_name: users
 ```

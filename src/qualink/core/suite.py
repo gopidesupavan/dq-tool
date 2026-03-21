@@ -24,8 +24,22 @@ if TYPE_CHECKING:
 class ValidationSuite(LoggingMixin):
     """Entry point for running data-quality checks."""
 
-    def __init__(self, name: str = "") -> None:
+    def __init__(
+        self,
+        name: str = "",
+        *,
+        description: str | None = None,
+        ctx: SessionContext | None = None,
+        table_name: str = "data",
+        checks: list[Check] | None = None,
+        run_parallel: bool = False,
+    ) -> None:
         self._name = name
+        self._description = description
+        self._ctx = ctx
+        self._table_name = table_name
+        self._checks = list(checks or [])
+        self._run_parallel = run_parallel
 
     @staticmethod
     def builder(name: str) -> ValidationSuiteBuilder:
@@ -36,7 +50,24 @@ class ValidationSuite(LoggingMixin):
     def on_data(self, ctx: SessionContext, table_name: str) -> ValidationSuiteBuilder:
         """Begin a validation run against *table_name* in the DataFusion *ctx*."""
 
-        return ValidationSuiteBuilder(self._name or "ValidationRun").on_data(ctx, table_name)
+        return self._to_builder().on_data(ctx, table_name)
+
+    async def run(self) -> ValidationResult:
+        """Execute a built suite with its stored configuration."""
+
+        return await self._to_builder().run()
+
+    def _to_builder(self) -> ValidationSuiteBuilder:
+        builder = ValidationSuiteBuilder(self._name or "ValidationRun")
+        if self._description is not None:
+            builder.description(self._description)
+        builder.add_checks(list(self._checks))
+        builder.run_parallel(self._run_parallel)
+        if self._ctx is not None:
+            builder.on_data(self._ctx, self._table_name)
+        else:
+            builder.table_name(self._table_name)
+        return builder
 
 
 class ValidationSuiteBuilder(LoggingMixin):
@@ -203,5 +234,11 @@ class ValidationSuiteBuilder(LoggingMixin):
 
     def build(self) -> ValidationSuite:
         """Return a configured ``ValidationSuite`` (for deferred execution)."""
-        suite = ValidationSuite(self._name)
-        return suite
+        return ValidationSuite(
+            self._name,
+            description=self._description,
+            ctx=self._ctx,
+            table_name=self._table_name,
+            checks=list(self._checks),
+            run_parallel=self._run_parallel,
+        )

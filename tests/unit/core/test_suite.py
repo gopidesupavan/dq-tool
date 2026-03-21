@@ -3,6 +3,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from datafusion import SessionContext
 from qualink.checks.check import Check, CheckResult
+from qualink.constraints.assertion import Assertion
+from qualink.constraints.size import SizeConstraint
 from qualink.core.constraint import ConstraintResult, ConstraintStatus
 from qualink.core.level import Level
 from qualink.core.result import CheckStatus
@@ -118,7 +120,54 @@ class TestValidationSuiteBuilder:
         assert len(result.report.issues) == 1
 
     def test_build(self):
-        builder = ValidationSuiteBuilder("test")
+        mock_ctx = MagicMock(spec=SessionContext)
+        mock_check = MagicMock(spec=Check)
+        builder = (
+            ValidationSuiteBuilder("test")
+            .description("desc")
+            .on_data(mock_ctx, "table")
+            .add_check(mock_check)
+            .run_parallel(True)
+        )
         suite = builder.build()
         assert isinstance(suite, ValidationSuite)
         assert suite._name == "test"
+        assert suite._description == "desc"
+        assert suite._ctx == mock_ctx
+        assert suite._table_name == "table"
+        assert suite._checks == [mock_check]
+        assert suite._run_parallel is True
+
+    @pytest.mark.asyncio()
+    async def test_built_suite_retains_configuration(self):
+        mock_ctx = MagicMock(spec=SessionContext)
+        builder = (
+            ValidationSuiteBuilder("test")
+            .on_data(mock_ctx, "table")
+            .add_check(Check.builder("size").has_size(Assertion.greater_than(0)).build())
+        )
+        suite = builder.build()
+
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            fake_builder = MagicMock(spec=ValidationSuiteBuilder)
+            fake_builder.run = AsyncMock(return_value="result")
+            monkeypatch.setattr(suite, "_to_builder", lambda: fake_builder)
+            result = await suite.run()
+
+        assert result == "result"
+
+    def test_built_suite_on_data_preserves_checks(self):
+        mock_ctx = MagicMock(spec=SessionContext)
+        built = (
+            ValidationSuiteBuilder("test")
+            .add_check(
+                Check.builder("size").add_constraint(SizeConstraint(Assertion.greater_than(0))).build()
+            )
+            .build()
+        )
+
+        rebound = built.on_data(mock_ctx, "table")
+
+        assert rebound._ctx == mock_ctx
+        assert rebound._table_name == "table"
+        assert len(rebound._checks) == 1

@@ -18,8 +18,6 @@ env/
 build/
 develop-eggs/
 dist/
-!providers/fab/**/www/static/dist
-!providers/edge3/**/www/dist
 downloads/
 eggs/
 .eggs/
@@ -186,3 +184,8 @@ docs/.cache/
 
 # Benchmark data (downloaded via benchmarks/download_data.sh)
 benchmarks/data/
+
+# Example runtime artifacts
+examples/__pycache__/
+examples/results/*
+!examples/results/.gitkeep

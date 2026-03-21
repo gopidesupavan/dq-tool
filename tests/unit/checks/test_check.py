@@ -129,11 +129,14 @@ class TestCheckBuilder:
 
     def test_has_uniqueness(self):
         from qualink.constraints.assertion import Assertion
+        from qualink.constraints.uniqueness import UniquenessConstraint
 
         builder = CheckBuilder("test")
         initial_len = len(builder._constraints)
         builder.has_uniqueness(["col1"], Assertion.equal_to(1.0))
         assert len(builder._constraints) == initial_len + 1
+        assert isinstance(builder._constraints[-1], UniquenessConstraint)
+        assert builder._constraints[-1]._assertion == Assertion.equal_to(1.0)
 
     def test_has_distinctness(self):
         from qualink.constraints.assertion import Assertion

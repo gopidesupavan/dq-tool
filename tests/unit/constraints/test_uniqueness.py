@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from datafusion import DataFrame, SessionContext
+from qualink.constraints.assertion import Assertion
 from qualink.constraints.uniqueness import UniquenessConstraint
 from qualink.core.constraint import ConstraintMetadata, ConstraintStatus
 
@@ -10,7 +11,7 @@ class TestUniquenessConstraint:
     def test_init_valid(self) -> None:
         c = UniquenessConstraint(["col1", "col2"], threshold=0.9)
         assert c._columns == ["col1", "col2"]
-        assert c._threshold == 0.9
+        assert c._assertion == Assertion.greater_than_or_equal(0.9)
 
     def test_init_invalid_empty_columns(self) -> None:
         with pytest.raises(ValueError, match="At least one column is required"):
@@ -23,6 +24,10 @@ class TestUniquenessConstraint:
     def test_init_invalid_threshold_high(self) -> None:
         with pytest.raises(ValueError, match=r"threshold must be in \[0, 1\], got 1.5"):
             UniquenessConstraint(["col"], threshold=1.5)
+
+    def test_init_rejects_both_assertion_and_threshold(self) -> None:
+        with pytest.raises(ValueError, match="either 'assertion' or 'threshold'"):
+            UniquenessConstraint(["col"], Assertion.equal_to(1.0), threshold=1.0)
 
     def test_name_single_column(self) -> None:
         c = UniquenessConstraint(["col"])
@@ -37,7 +42,7 @@ class TestUniquenessConstraint:
         meta = c.metadata()
         assert isinstance(meta, ConstraintMetadata)
         assert meta.name == "Uniqueness(col)"
-        assert "Uniqueness of (col) >= 0.95" in meta.description
+        assert "Uniqueness of (col) satisfies >= 0.95" in meta.description
         assert meta.column == "col"
 
     def test_metadata_multiple_columns(self) -> None:
@@ -85,4 +90,24 @@ class TestUniquenessConstraint:
         result = await c.evaluate(mock_ctx, "table")
 
         assert result.status == ConstraintStatus.FAILURE
+        assert result.metric == 0.7
+
+    @pytest.mark.asyncio()
+    async def test_evaluate_uses_full_assertion_semantics(self) -> None:
+        mock_df = MagicMock(spec=DataFrame)
+        mock_row = MagicMock()
+        mock_column = MagicMock()
+        mock_value = MagicMock()
+        mock_value.as_py.return_value = 0.7
+        mock_column.__getitem__.return_value = mock_value
+        mock_row.column.return_value = mock_column
+        mock_df.collect.return_value = [mock_row]
+
+        mock_ctx = MagicMock(spec=SessionContext)
+        mock_ctx.sql.return_value = mock_df
+
+        c = UniquenessConstraint(["col"], Assertion.less_than(0.8))
+        result = await c.evaluate(mock_ctx, "table")
+
+        assert result.status == ConstraintStatus.SUCCESS
         assert result.metric == 0.7
